@@ -1,0 +1,821 @@
+\documentclass[a4paper,12pt]{article}\usepackage[]{graphicx}\usepackage[]{color}
+% maxwidth is the original width if it is less than linewidth
+% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+\definecolor{fgcolor}{rgb}{0.345, 0.345, 0.345}
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.686,0.059,0.569}{#1}}%
+\newcommand{\hlstr}[1]{\textcolor[rgb]{0.192,0.494,0.8}{#1}}%
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.678,0.584,0.686}{\textit{#1}}}%
+\newcommand{\hlopt}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0.345,0.345,0.345}{#1}}%
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0.161,0.373,0.58}{\textbf{#1}}}%
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.69,0.353,0.396}{#1}}%
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0.333,0.667,0.333}{#1}}%
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0.737,0.353,0.396}{\textbf{#1}}}%
+\let\hlipl\hlkwb
+
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\at@end@of@kframe{}%
+ \ifinner\ifhmode%
+  \def\at@end@of@kframe{\end{minipage}}%
+  \begin{minipage}{\columnwidth}%
+ \fi\fi%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \\@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed%
+ \at@end@of@kframe}
+\makeatother
+
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\usepackage{alltt}
+
+% Packages
+\usepackage{booktabs}
+\usepackage{graphicx, verbatim}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amscd}
+\usepackage{lipsum}
+\usepackage{todonotes}
+\usepackage[tableposition=top]{caption}
+\usepackage{ifthen}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\setlength{\textwidth}{6.5in} 
+\setlength{\textheight}{9in}
+\setlength{\oddsidemargin}{0in} 
+\setlength{\evensidemargin}{0in}
+\setlength{\topmargin}{-1.5cm}
+\setlength{\parindent}{0cm}
+\usepackage{setspace}
+\usepackage{float}
+\usepackage{amssymb}
+\usepackage[utf8]{inputenc}
+\usepackage{fancyhdr}
+\usepackage{tabularx}
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks   = true, % Colours links instead of ugly boxes
+  urlcolor     = blue, % Colour for external hyperlinks
+  linkcolor    = blue, % Colour of internal links
+  citecolor    = red   % Colour of citations
+}
+
+% Document Styling
+\rfoot{Sergio Castillo \thepage}
+\singlespacing
+\usepackage[affil-it]{authblk} 
+\usepackage{etoolbox}
+\usepackage{lmodern}
+
+% Citation Package
+\usepackage[backend=bibtex ,sorting=none]{biblatex}
+\bibliography{references}
+\begin{filecontents*}{references.bib}
+\end{filecontents*}
+
+% Metadata
+\title{\textbf{\Huge Mammographic Mass Data Set}}
+\author{\Large Sergio Castillo, 1513228@rgu.ac.uk}
+\date{22nd November 2019}
+
+% Document Start
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\begin{document}
+%\SweaveOpts{concordance=TRUE}
+
+% Cover Page
+\input{titlepage}
+
+% Table of Contents
+\pagenumbering{roman}
+\tableofcontents
+\newpage
+\pagenumbering{arabic}
+
+% Overview
+\section{Overview}\label{overview}
+The purpose of this report is to analyze a given dataset, in order to reach certain conclusions and be able to predict an outcome with the highest accuracy possible, thus showing competence in understanding, identifying, applying and evaluating machine learning algorithms. In order to do that, I will be using a data set focused on the prediction of malicious mammographic masses based on the result of BI-RAD (Breast Imaging-Reporting and Data System) assessments.
+
+% Data Exploration
+\section{Data Exploration}\label{data_exploration}
+
+% The Dataset
+\subsection{The Dataset}\label{dataset}
+I've chosen this dataset because I am interested in learning how data analysis and machine learning can be used in order to save people's lives. Additionally, the number of attributes and instances seemed adequate for analysis.
+
+\subsubsection{Dataset Name}\label{name}
+Mammographic Mass
+
+\subsubsection{Dataset Source}\label{source}
+The dataset was obtained from the UCI Machine Learning Repository\cite{datasetOrigin}.
+The origin of the dataset is a paper published by M.Elter, R.Schulz-Wendtland and T.Wittenberg, titled \textbf{"The prediction of breast cancer biopsy outcomes using two CAD approaches that both emphasize an intelligible decision process"}\cite{researchPaper}. 
+
+\subsubsection{Dataset Acquirement Date}\label{date}
+The dataset was obtained on the 4th of October 2019\\
+The original paper was published in 2007, and the dataset was donated on the 29th of October, 2007.
+
+\clearpage
+
+% Problem Statement
+\subsection{Problem Statement \& Data Exploration}\label{dataexp}
+This dataset contains information of 961 patients' BI-RAD assessment, having different parameters of the BI-RAD attributes, patient's age and the result of such assessment
+Mammography is the most effective method for breast cancer screening available today. However, the low positive predictive value of breast biopsy resulting from mammogram interpretation leads to approximately 70\% unnecessary biopsies with benign outcomes. To reduce the high number of unnecessary breast biopsies, several computer-aided diagnosis (CAD) systems have been proposed in the last years.These systems help physicians in their decision to perform a breast biopsy on a suspicious lesion seen in a mammogram or to perform a short term follow-up examination instead.
+
+\subsubsection{Objective}\label{objective}
+This data set can be used to predict the severity (benign or malignant) of a mammographic mass lesion from BI-RADS ( Breast Imaging-Reporting and Data System) attributes and the patient's age.
+
+
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# Dataset dimensions}
+\hlkwd{nrow}\hlstd{(df)}
+\end{alltt}
+\begin{verbatim}
+## [1] 961
+\end{verbatim}
+\begin{alltt}
+\hlkwd{ncol}\hlstd{(df)}
+\end{alltt}
+\begin{verbatim}
+## [1] 6
+\end{verbatim}
+\begin{alltt}
+\hlkwd{dim}\hlstd{(df)}
+\end{alltt}
+\begin{verbatim}
+## [1] 961   6
+\end{verbatim}
+\begin{alltt}
+\hlcom{# Show some rows}
+\hlstd{df[}\hlnum{1}\hlopt{:}\hlnum{10}\hlstd{,]}
+\end{alltt}
+\begin{verbatim}
+##    Assessment Age Shape Margin Density Severity
+## 1           5  67     3      5       3        1
+## 2           4  43     1      1    <NA>        1
+## 3           5  58     4      5       3        1
+## 4           4  28     1      1       3        0
+## 5           5  74     1      5    <NA>        1
+## 6           4  65     1   <NA>       3        0
+## 7           4  70  <NA>   <NA>       3        0
+## 8           5  42     1   <NA>       3        0
+## 9           5  57     1      5       3        1
+## 10          5  60  <NA>      5       1        1
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\clearpage
+
+\subsubsection{Attributes}\label{attributes}
+The attributes provide information about the patients' age, mammograpic mass results and the severity of the mass. There are 6 attributes in total, from which 4 are predictive attributes, 1 is non-predictive and 1 is the goal field. 
+
+\begin{enumerate}
+
+\item \textbf{Assessment}: Results of the BI-RADS, an indication of how well a CAD system performs compared to the radiologists
+\begin{itemize}
+  \item 0: Definitely benign - 6: Highly suggestive of malignacy
+  \item Ordinal Categorical Variable
+  \item Non-Predictive Attribute
+\end{itemize}
+
+\item \textbf{Age}: Patient's age in years
+\begin{itemize}
+  \item Integer Variable
+  \item Predictive Attribute
+\end{itemize}
+
+\item \textbf{Shape}: Mass shape
+\begin{itemize}
+  \item 1: Round, 2: Oval, 3: Lobular, 4: Irregular
+  \item Nominal Categorical Variable
+  \item Predictive Attribute
+\end{itemize}
+
+\item \textbf{Margin}: Mass margin
+\begin{itemize}
+  \item 1: Circumscribed, 2: Microlobulated, 3: Obscured, 4: Ill-defined, 5: Spiculated
+  \item Nominal Categorical Variable
+  \item Predictive Attribute
+\end{itemize}
+
+\item \textbf{Density}: Mass density
+\begin{itemize}
+  \item 1: High, 2: Iso, 3: Low, 4: Fat-containing
+  \item Ordinal Categorical Variable
+  \item Predictive Attribute
+\end{itemize}
+
+\item \textbf{Severity}: Severity of the mammographic mass
+\begin{itemize}
+  \item 0: Bening, Malignant: 1
+  \item Binomial Categorical Variable
+  \item Goal Attribute
+\end{itemize}
+\end{enumerate}
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# Show Column names}
+\hlkwd{names}\hlstd{(df)}
+\end{alltt}
+\begin{verbatim}
+## [1] "Assessment" "Age"        "Shape"      "Margin"     "Density"   
+## [6] "Severity"
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\clearpage
+
+\subsubsection{Class Distribution}\label{class_distribution}
+The goal field on the dataset is the severity of the mammographic mass, which can either be benign (i.e Non-Harmful) or malicious.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# Finding how many unique fields there are, and the unique values}
+\hlkwd{length}\hlstd{(}\hlkwd{unique}\hlstd{(df}\hlopt{$}\hlstd{Severity))}
+\end{alltt}
+\begin{verbatim}
+## [1] 2
+\end{verbatim}
+\begin{alltt}
+\hlkwd{unique}\hlstd{(df}\hlopt{$}\hlstd{Severity)}
+\end{alltt}
+\begin{verbatim}
+## [1] 1 0
+## Levels: 0 1
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+As shown in the bar plot below, the dataset contains 961 entries, for 516 benign and 445 malignant masses.\\
+
+\begin{figure}[H]
+{\centering
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# Class distribution}
+\hlstd{severityFreq} \hlkwb{<-} \hlkwd{table}\hlstd{(df}\hlopt{$}\hlstd{Severity)}
+\hlkwd{barplot}\hlstd{(}
+  \hlstd{severityFreq,}
+  \hlkwc{col} \hlstd{=} \hlkwd{c}\hlstd{(}\hlstr{'steelblue4'}\hlstd{,}\hlstr{'coral1'}\hlstd{),}
+  \hlkwc{main}\hlstd{=}\hlstr{"Severity Frequency"}\hlstd{,}
+  \hlkwc{names.arg}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{"Benign"}\hlstd{,}\hlstr{"Malicious"}\hlstd{),}
+  \hlkwc{ylab}\hlstd{=}\hlstr{"Number of patients"}
+\hlstd{)}
+\end{alltt}
+\end{kframe}
+\includegraphics[width=.5\linewidth]{figure/unnamed-chunk-5-1} 
+
+\end{knitrout}
+\caption {Class distribution of the severity}
+\label{fig1}
+}
+\end {figure}
+
+\clearpage
+
+\subsubsection{Dataset Summary}\label{summary}
+
+The summary displays a briefing of every column, showing statistical iformation about the data in every entry. The summary can either be numerical (Which shows information such as the maximum and minimum values, median and quartiles) or categorical, which shows the frequency of each one of the categorical values.\\
+In this dataset, only the Patient's age is numerical. The rest of the attributes only show the frequency.\\
+
+% Age
+{\large Age Summary}\\
+The patient Age attribute is a numerical attribute, so the summary shows the minimum, first quartile, median, mean, third quartile and maximum values of the data
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# Age    Summary}
+\hlkwd{summary}\hlstd{(df}\hlopt{$}\hlstd{Age)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+\begin{table}[H]
+\centering
+\begin{tabular}{ c c c c c c c }
+Min   & 1st Qu  & Median  & Mean  & 3rd Qu  & Max   & Missing \\
+\hline
+18.00 & 45.00   & 57.00   & 55.49 & 66.00   & 96.00 & 5
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+{\centering
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{Age} \hlkwb{<-} \hlstd{df}\hlopt{$}\hlstd{Age}
+\hlkwd{hist}\hlstd{(}
+  \hlstd{Age,}
+  \hlkwc{xlab}\hlstd{=}\hlstr{"Patient Age"}\hlstd{,}
+  \hlkwc{col}\hlstd{=}\hlstr{"turquoise3"}\hlstd{,}
+\hlstd{)}
+\end{alltt}
+\end{kframe}
+\includegraphics[width=.5\linewidth]{figure/unnamed-chunk-7-1} 
+
+\end{knitrout}
+\caption {Histogram of the Patients' Age}
+\label{fig2}
+}
+\end {figure}
+
+% Shape
+{\large Shape Summary}\\
+The mass Shape attribute is a categorical attribute, so the summary shows the value frequency
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# Shape Summary}
+\hlkwd{summary}\hlstd{(df}\hlopt{$}\hlstd{Shape)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+\begin{table}[H]
+\centering
+\begin{tabular}{ c c c c c }
+Round & Oval & Lobular & Irregular & Missing \\
+\hline
+224   & 211  & 95      & 400       & 31
+\end{tabular}
+\end{table}
+
+% Margin
+{\large Margin Summary}\\
+The mass Margin attribute is a categorical attribute, so the summary shows the value frequency
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# Margin Summary}
+\hlkwd{summary}\hlstd{(df}\hlopt{$}\hlstd{Margin)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+\begin{table}[H]
+\centering
+\begin{tabular}{ c c c c c c }
+Circumscribed & Microlobulated & Obscured & Ill-defined & Spiculated & Missing \\
+\hline
+357           & 24             & 116      & 280         & 136        & 48  
+\end{tabular}
+\end{table}
+
+% Density
+{\large Density Summary}\\
+The mass Density attribute is a categorical attribute, so the summary shows the value frequency
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# Density Summary}
+\hlkwd{summary}\hlstd{(df}\hlopt{$}\hlstd{Density)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+\begin{table}[H]
+\centering
+\begin{tabular}{ c c c c c }
+High  & Iso  & Low  & Fat-Containing & Missing \\
+\hline
+16    & 59   & 798  & 12             & 76
+\end{tabular}
+\end{table}
+
+\clearpage
+
+\subsubsection{Attribute Correlation}\label{correlation}
+Correlation measures the relationship between two measurements. This dataset only contains one numerical attribute, so there's no chance to create a numerical correlation between the different values. However, a relationship can be established between the age of the patient and the severity of the mammographic mass.This relation is known, but the other attributes also contribute to it.
+
+\begin{figure}[H]
+{\centering
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# Finding how attributes compare to goal}
+\hlkwd{plot}\hlstd{(}
+  \hlkwc{data} \hlstd{= df,}
+  \hlstd{Age}\hlopt{~}\hlstd{Severity,}
+  \hlkwc{col} \hlstd{=} \hlkwd{c}\hlstd{(}\hlstr{'steelblue4'}\hlstd{,}\hlstr{'coral1'}\hlstd{),}
+  \hlkwc{names.arg}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{"Benign"}\hlstd{,}\hlstr{"Malicious"}\hlstd{)}
+
+\hlstd{)}
+\end{alltt}
+\end{kframe}
+\includegraphics[width=.75\linewidth]{figure/unnamed-chunk-11-1} 
+
+\end{knitrout}
+\caption {Correlation between the Age and the severity of the Mammographic mass}
+\label{fig3}
+}
+\end {figure}
+
+\clearpage
+
+In the following page, correlations 3 Age and different Mammographic attributes can be found [~\ref{fig4}], [~\ref{fig5}], [~\ref{fig6}]. As mentioned, there is a relation between the age and the type of mass, but it's not enough to reach a conclusion.
+
+\begin{figure}[H]
+{\centering
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{library}\hlstd{(datasets)}
+\hlstd{data} \hlkwb{<-} \hlkwd{transform}\hlstd{(df, Shape)}
+\hlkwd{boxplot}\hlstd{(Age}\hlopt{~}\hlstd{Shape, data,} \hlkwc{xlab}\hlstd{=}\hlstr{"Shape"}\hlstd{,} \hlkwc{ylab}\hlstd{=}\hlstr{"Age"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\includegraphics[width=.5\linewidth]{figure/unnamed-chunk-12-1} 
+
+\end{knitrout}
+\caption {Relation between Age and Mass Shape (Round, Oval, Lobular, Irregular)}
+\label{fig4}
+}
+\end {figure}
+
+\begin{figure}[H]
+{\centering
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{data} \hlkwb{<-} \hlkwd{transform}\hlstd{(df, Margin)}
+\hlkwd{boxplot}\hlstd{(Age}\hlopt{~}\hlstd{Margin, data,}\hlkwc{xlab}\hlstd{=}\hlstr{"Margin"}\hlstd{,}\hlkwc{ylab}\hlstd{=}\hlstr{"Age"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\includegraphics[width=.5\linewidth]{figure/unnamed-chunk-13-1} 
+
+\end{knitrout}
+\caption {Relation between Age and Mass Margin (Circumscribed, Microlobulated, Obscured, Ill-defined, Spiculated)}
+\label{fig5}
+}
+\end {figure}
+
+\begin{figure}[H]
+{\centering
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{data} \hlkwb{<-} \hlkwd{transform}\hlstd{(df, Density)}
+\hlkwd{boxplot}\hlstd{(Age}\hlopt{~}\hlstd{Density, data,}\hlkwc{xlab}\hlstd{=}\hlstr{"Density"}\hlstd{,}\hlkwc{ylab}\hlstd{=}\hlstr{"Age"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\includegraphics[width=.35\linewidth]{figure/unnamed-chunk-14-1} 
+
+\end{knitrout}
+\caption {Relation between Age and the Mass Density (High, Iso, Low, Fat-containing)}
+\label{fig6}
+}
+\end {figure}
+  
+\clearpage
+
+% Data Pre-processing
+\section{Data Pre-processing}\label{preprocess}
+In order to analyze the data, the attributes must first be adequated for study. This is known as pre-processing
+
+% Irrelevant Columns
+\subsection{Irrelevant Columns}\label{irrelevant_columns}
+Before going any further, it has been previously mentioned that the Assessment column is a non-predictive attribute, since it measures the effectiveness of CAD Systems. Therefore, the column is not relevant for data mining, and it should be dropped.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# Backing up the data frame}
+\hlstd{df_full} \hlkwb{<-} \hlstd{df}
+
+\hlcom{# Dropping the irrelevant column}
+\hlstd{df}\hlopt{$}\hlstd{Assessment} \hlkwb{<-} \hlkwa{NULL}
+
+\hlcom{# Showing the data frame columns without the dropped one}
+\hlkwd{names}\hlstd{(df)}
+\end{alltt}
+\begin{verbatim}
+## [1] "Age"      "Shape"    "Margin"   "Density"  "Severity"
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+% Missing Values
+\subsection{Missing Values}\label{missing_values}
+One of the main issues with the dataset is the number of missing values. When taking a look at the raw data, it can be appreciated that the way missing values were handled was by writing a question mark "?" in place of the value.\\
+The data frame will need to have those missing values recognized, so when parsing the file as a data frame, missing values must be specified
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# Importing the data}
+\hlstd{dataFrame} \hlkwb{<-} \hlkwd{read.table}\hlstd{(}\hlstr{'data/mammographic_masses.data'}\hlstd{,}
+                        \hlkwc{header}\hlstd{=}\hlnum{FALSE}\hlstd{,} \hlkwc{sep}\hlstd{=}\hlstr{","}\hlstd{,} \hlkwc{na.strings}\hlstd{=}\hlstr{"?"}\hlstd{)}
+
+\hlcom{# Showing some rows}
+\hlstd{df[}\hlnum{1}\hlopt{:}\hlnum{5}\hlstd{,]}
+\end{alltt}
+\begin{verbatim}
+##   Age Shape Margin Density Severity
+## 1  67     3      5       3        1
+## 2  43     1      1    <NA>        1
+## 3  58     4      5       3        1
+## 4  28     1      1       3        0
+## 5  74     1      5    <NA>        1
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+\clearpage
+Now that missing values have been identified, it is necessary to know which values are missing:
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{sum}\hlstd{(}\hlkwd{is.na}\hlstd{(df))}
+\end{alltt}
+\begin{verbatim}
+## [1] 160
+\end{verbatim}
+\begin{alltt}
+\hlkwd{sum}\hlstd{(}\hlkwd{is.na}\hlstd{(df}\hlopt{$}\hlstd{Age))}
+\end{alltt}
+\begin{verbatim}
+## [1] 5
+\end{verbatim}
+\begin{alltt}
+\hlkwd{sum}\hlstd{(}\hlkwd{is.na}\hlstd{(df}\hlopt{$}\hlstd{Shape))}
+\end{alltt}
+\begin{verbatim}
+## [1] 31
+\end{verbatim}
+\begin{alltt}
+\hlkwd{sum}\hlstd{(}\hlkwd{is.na}\hlstd{(df}\hlopt{$}\hlstd{Margin))}
+\end{alltt}
+\begin{verbatim}
+## [1] 48
+\end{verbatim}
+\begin{alltt}
+\hlkwd{sum}\hlstd{(}\hlkwd{is.na}\hlstd{(df}\hlopt{$}\hlstd{Density))}
+\end{alltt}
+\begin{verbatim}
+## [1] 76
+\end{verbatim}
+\begin{alltt}
+\hlkwd{sum}\hlstd{(}\hlkwd{is.na}\hlstd{(df}\hlopt{$}\hlstd{Severity))}
+\end{alltt}
+\begin{verbatim}
+## [1] 0
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\begin{table}[H]
+\begin{tabular}{ c c c c c c }
+Age & Shape & Margin & Density & Severity & Total \\
+\hline
+5   & 31    & 48     & 76      & 48       & 162  
+\end{tabular}
+\end{table}
+
+\subsubsection{Filling missing values}\label{filling_gaps}
+With numerical values, a way to deal with missing values is by replacing the blank attribute with the mean of such attribute.
+Since the age is the only numerical attribute, we can only use this method here.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# Defining the function}
+\hlstd{fillMissings} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{) \{}
+  \hlkwd{replace}\hlstd{(}
+    \hlstd{x,}
+    \hlkwd{is.na}\hlstd{(x),}
+    \hlkwd{mean}\hlstd{(x[}\hlopt{!}\hlkwd{is.na}\hlstd{(x)]))}
+\hlstd{\}}
+
+\hlcom{# Applying the function to the Age column}
+\hlstd{df}\hlopt{$}\hlstd{Age} \hlkwb{<-} \hlkwd{fillMissings}\hlstd{(df}\hlopt{$}\hlstd{Age)}
+
+\hlcom{# Verifying the number of missing values on the age column}
+\hlkwd{sum}\hlstd{(}\hlkwd{is.na}\hlstd{(df}\hlopt{$}\hlstd{Age))}
+\end{alltt}
+\begin{verbatim}
+## [1] 0
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\subsubsection{Deleting rows}\label{deleting_rows}
+Since we cannot fill the missing values, due to the categorical nature of the attributes, we have no other option but to drop the rows that contain them.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# Deleting rows with misssing factor attributes}
+\hlstd{df} \hlkwb{<-} \hlstd{df[}\hlopt{!}\hlkwd{is.na}\hlstd{(df}\hlopt{$}\hlstd{Shape),]}
+\hlstd{df} \hlkwb{<-} \hlstd{df[}\hlopt{!}\hlkwd{is.na}\hlstd{(df}\hlopt{$}\hlstd{Margin),]}
+\hlstd{df} \hlkwb{<-} \hlstd{df[}\hlopt{!}\hlkwd{is.na}\hlstd{(df}\hlopt{$}\hlstd{Density),]}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+We can now observe that there are no missing values in our data frame
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{sum}\hlstd{(}\hlkwd{is.na}\hlstd{(df))}
+\end{alltt}
+\begin{verbatim}
+## [1] 0
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+% Missing Header
+\subsection{Missing Header}\label{missing_header}
+Another issue with the dataset is the lack of headers. We may know the meaning of every column after reading about the dataset, but we still need a way to identify each one of the columns.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# Showing the data frame header}
+\hlkwd{names}\hlstd{(dataFrame)}
+\end{alltt}
+\begin{verbatim}
+## [1] "V1" "V2" "V3" "V4" "V5" "V6"
+\end{verbatim}
+\begin{alltt}
+\hlcom{# Changing the column names}
+\hlkwd{names}\hlstd{(dataFrame)} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlstr{"Assessment"}\hlstd{,}\hlstr{"Age"}\hlstd{,}\hlstr{"Shape"}\hlstd{,}\hlstr{"Margin"}\hlstd{,}\hlstr{"Density"}\hlstd{,} \hlstr{"Severity"}\hlstd{)}
+
+\hlcom{# Showing the column names}
+\hlkwd{names}\hlstd{(dataFrame)}
+\end{alltt}
+\begin{verbatim}
+## [1] "Assessment" "Age"        "Shape"      "Margin"     "Density"   
+## [6] "Severity"
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\clearpage
+
+\subsection{Categorical Values}\label{categorical_values}
+As previously mentioned, most of the values are categorical, rather than numerical. This means that it can't just be measured as a number, but as propertie of the entries. After dropping unnecessary columns, the categorical attributes are the following:
+
+\begin{enumerate}
+\item \textbf{Shape}: Shape of the mammographic mass. (Nominal)
+\item \textbf{Margin}: Margin of the mammographic mass. (Nominal)
+\item \textbf{Density}: Density of the mammographic mass. (Ordinal)
+\item \textbf{Severity}: Severity of the mammographic mass. (Binominal)
+\end{enumerate}
+
+Fortunately enough, the categorical attributes already come as numerical values. If this was not the case and they were represented as, for instance, strings, such strings would need to be converted into numerical values.\\
+Now, the attributes will be converted into categorical values.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# Turning the attributes into categofical}
+\hlstd{df}\hlopt{$}\hlstd{Shape}      \hlkwb{<-} \hlkwd{as.factor}\hlstd{(df}\hlopt{$}\hlstd{Shape)}
+\hlstd{df}\hlopt{$}\hlstd{Margin}     \hlkwb{<-} \hlkwd{as.factor}\hlstd{(df}\hlopt{$}\hlstd{Margin)}
+\hlstd{df}\hlopt{$}\hlstd{Density}    \hlkwb{<-} \hlkwd{as.factor}\hlstd{(df}\hlopt{$}\hlstd{Density)}
+\hlstd{df}\hlopt{$}\hlstd{Severity}   \hlkwb{<-} \hlkwd{as.factor}\hlstd{(df}\hlopt{$}\hlstd{Severity)}
+
+\hlcom{# Checking whether the fields are factors}
+\hlkwd{is.factor}\hlstd{(df}\hlopt{$}\hlstd{Age)}
+\end{alltt}
+\begin{verbatim}
+## [1] FALSE
+\end{verbatim}
+\begin{alltt}
+\hlkwd{is.factor}\hlstd{(df}\hlopt{$}\hlstd{Shape)}
+\end{alltt}
+\begin{verbatim}
+## [1] TRUE
+\end{verbatim}
+\begin{alltt}
+\hlkwd{is.factor}\hlstd{(df}\hlopt{$}\hlstd{Margin)}
+\end{alltt}
+\begin{verbatim}
+## [1] TRUE
+\end{verbatim}
+\begin{alltt}
+\hlkwd{is.factor}\hlstd{(df}\hlopt{$}\hlstd{Density)}
+\end{alltt}
+\begin{verbatim}
+## [1] TRUE
+\end{verbatim}
+\begin{alltt}
+\hlkwd{is.factor}\hlstd{(df}\hlopt{$}\hlstd{Severity)}
+\end{alltt}
+\begin{verbatim}
+## [1] TRUE
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\subsection{Data Normalization}\label{data_normalization}
+Since there are no noticeable irregularities in the dataset, such as outliers or skewed values, there is no need to normalize the dataset.
+
+\section{Modelling}\label{modelling}
+Now that the dataset has been explored and there is a better idea of what needs to be predicted, we can start building and testing models.
+
+\subsection{Creating Subsets}\label{subsets}
+Before creating predictive models, the dataset will be split into a training and a testing set, in order to avoid future problems with overfitting or underfitting.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# Downloading necessary libraries}
+\hlkwd{library}\hlstd{(ISLR)}
+\hlkwd{library}\hlstd{(dplyr)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# Getting the training dataset}
+\hlstd{train}\hlkwb{<-}\hlkwd{sample_frac}\hlstd{( df ,} \hlnum{0.7}\hlstd{)}
+\hlstd{sid}\hlkwb{<-}\hlkwd{as.numeric}\hlstd{(}\hlkwd{rownames}\hlstd{(train))}
+\hlkwd{nrow}\hlstd{(train)}
+\end{alltt}
+\begin{verbatim}
+## [1] 585
+\end{verbatim}
+\begin{alltt}
+\hlcom{# Getting the test dataset}
+\hlstd{test} \hlkwb{<-} \hlstd{df[}\hlopt{-}\hlstd{sid,]}
+\hlkwd{nrow}\hlstd{(test)}
+\end{alltt}
+\begin{verbatim}
+## [1] 251
+\end{verbatim}
+\begin{alltt}
+\hlkwa{if} \hlstd{(} \hlkwd{nrow}\hlstd{(train)} \hlopt{+} \hlkwd{nrow}\hlstd{(test)} \hlopt{==} \hlkwd{nrow}\hlstd{(df) )\{}
+  \hlkwd{print}\hlstd{(}\hlstr{"The dataset has been split properly"}\hlstd{)}
+\hlstd{\}} \hlkwa{else} \hlstd{\{}
+  \hlkwd{print}\hlstd{(}\hlstr{"The split of the dataset was not correct"}\hlstd{)}
+\hlstd{\}}
+\end{alltt}
+\begin{verbatim}
+## [1] "The dataset has been split properly"
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\clearpage
+
+\subsection{Model}\label{model}
+
+
+\subsection{Test Model}\label{testing}
+\subsection{Results}\label{results}
+
+\clearpage
+
+\section{Improving Performance}\label{improving_performance}
+
+\subsection{Filling Missing Values}\label{filling_missing}
+Earlier in this coursework, I made the mistake to assume all categorical values were supposed to be deleted, without trying to handle them. However, I realized that there are sevetral algorithms that deal with missing categorical values. So I decided to try them out.
+
+\subsection{Tune Parameters}\label{tuning}
+
+\subsection{Metrics}\label{metrics}
+\subsection{Different Models}\label{different_models}
+\subsection{Change Partitioning}\label{change_partitioning}
+\subsection{Cross Validation}\label{cross_validation}
+
+\clearpage
+
+\section{References}\label{pubs}
+
+\printbibliography[heading =none]
+
+
+\clearpage
+
+
+\end{document}

@@ -1,0 +1,565 @@
+\documentclass[a4paper,12pt]{article}
+
+% Packages
+\usepackage{booktabs}
+\usepackage{graphicx, verbatim}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amscd}
+\usepackage{lipsum}
+\usepackage{todonotes}
+\usepackage[tableposition=top]{caption}
+\usepackage{ifthen}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\setlength{\textwidth}{6.5in} 
+\setlength{\textheight}{9in}
+\setlength{\oddsidemargin}{0in} 
+\setlength{\evensidemargin}{0in}
+\setlength{\topmargin}{-1.5cm}
+\setlength{\parindent}{0cm}
+\usepackage{setspace}
+\usepackage{float}
+\usepackage{amssymb}
+\usepackage[utf8]{inputenc}
+\usepackage{fancyhdr}
+\usepackage{tabularx}
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks   = true, % Colours links instead of ugly boxes
+  urlcolor     = blue, % Colour for external hyperlinks
+  linkcolor    = blue, % Colour of internal links
+  citecolor    = red   % Colour of citations
+}
+
+% Document Styling
+\rfoot{Sergio Castillo \thepage}
+\singlespacing
+\usepackage[affil-it]{authblk} 
+\usepackage{etoolbox}
+\usepackage{lmodern}
+
+% Citation Package
+\usepackage[backend=bibtex ,sorting=none]{biblatex}
+\bibliography{references}
+\begin{filecontents*}{references.bib}
+\end{filecontents*}
+
+% Metadata
+\title{\textbf{\Huge Mammographic Mass Data Set}}
+\author{\Large Sergio Castillo, 1513228@rgu.ac.uk}
+\date{22nd November 2019}
+
+% Document Start
+\begin{document}
+%\SweaveOpts{concordance=TRUE}
+
+% Cover Page
+\input{titlepage}
+
+% Table of Contents
+\pagenumbering{roman}
+\tableofcontents
+\newpage
+\pagenumbering{arabic}
+
+% Overview
+\section{Overview}\label{overview}
+The purpose of this report is to analyze a given dataset, in order to reach certain conclusions and be able to predict an outcome with the highest accuracy possible, thus showing competence in understanding, identifying, applying and evaluating machine learning algorithms. In order to do that, I will be using a data set focused on the prediction of malicious mammographic masses based on the result of BI-RAD (Breast Imaging-Reporting and Data System) assessments.
+
+% Data Exploration
+\section{Data Exploration}\label{data_exploration}
+
+% The Dataset
+\subsection{The Dataset}\label{dataset}
+I've chosen this dataset because I am interested in learning how data analysis and machine learning can be used in order to save people's lives. Additionally, the number of attributes and instances seemed adequate for analysis.
+
+\subsubsection{Dataset Name}\label{name}
+Mammographic Mass
+
+\subsubsection{Dataset Source}\label{source}
+The dataset was obtained from the UCI Machine Learning Repository\cite{datasetOrigin}.
+The origin of the dataset is a paper published by M.Elter, R.Schulz-Wendtland and T.Wittenberg, titled \textbf{"The prediction of breast cancer biopsy outcomes using two CAD approaches that both emphasize an intelligible decision process"}\cite{researchPaper}. 
+
+\subsubsection{Dataset Acquirement Date}\label{date}
+The dataset was obtained on the 4th of October 2019\\
+The original paper was published in 2007, and the dataset was donated on the 29th of October, 2007.
+
+\clearpage
+
+% Problem Statement
+\subsection{Problem Statement \& Data Exploration}\label{dataexp}
+This dataset contains information of 961 patients' BI-RAD assessment, having different parameters of the BI-RAD attributes, patient's age and the result of such assessment
+Mammography is the most effective method for breast cancer screening available today. However, the low positive predictive value of breast biopsy resulting from mammogram interpretation leads to approximately 70\% unnecessary biopsies with benign outcomes. To reduce the high number of unnecessary breast biopsies, several computer-aided diagnosis (CAD) systems have been proposed in the last years.These systems help physicians in their decision to perform a breast biopsy on a suspicious lesion seen in a mammogram or to perform a short term follow-up examination instead.
+
+\subsubsection{Objective}\label{objective}
+This data set can be used to predict the severity (benign or malignant) of a mammographic mass lesion from BI-RADS ( Breast Imaging-Reporting and Data System) attributes and the patient's age.
+
+<<echo=FALSE, eval=TRUE>>=
+
+# Set directory to current
+#setwd("C:/Users/sergi/Google Drive/Uni/Y-03/CM3111 - Big Data Analytics/Coursework/Report")
+
+# Importing the data
+df <- read.table('data/mammographic_masses.data', header=FALSE, sep=",", na.strings="?")
+
+# Changing the column names
+names(df) <- c("Assessment","Age","Shape","Margin","Density", "Severity")
+
+# Converting into categorical
+df$Assessment <- as.factor(df$Assessment)
+df$Shape      <- as.factor(df$Shape)
+df$Margin     <- as.factor(df$Margin)
+df$Density    <- as.factor(df$Density)
+df$Severity   <- as.factor(df$Severity)
+
+@
+
+<<echo=TRUE, eval=TRUE>>=
+
+# Dataset dimensions
+nrow(df)
+ncol(df)
+dim(df)
+
+# Show some rows
+df[1:10,]
+
+@
+
+\clearpage
+
+\subsubsection{Attributes}\label{attributes}
+The attributes provide information about the patients' age, mammograpic mass results and the severity of the mass. There are 6 attributes in total, from which 4 are predictive attributes, 1 is non-predictive and 1 is the goal field. 
+
+\begin{enumerate}
+
+\item \textbf{Assessment}: Results of the BI-RADS, an indication of how well a CAD system performs compared to the radiologists
+\begin{itemize}
+  \item 0: Definitely benign - 6: Highly suggestive of malignacy
+  \item Ordinal Categorical Variable
+  \item Non-Predictive Attribute
+\end{itemize}
+
+\item \textbf{Age}: Patient's age in years
+\begin{itemize}
+  \item Integer Variable
+  \item Predictive Attribute
+\end{itemize}
+
+\item \textbf{Shape}: Mass shape
+\begin{itemize}
+  \item 1: Round, 2: Oval, 3: Lobular, 4: Irregular
+  \item Nominal Categorical Variable
+  \item Predictive Attribute
+\end{itemize}
+
+\item \textbf{Margin}: Mass margin
+\begin{itemize}
+  \item 1: Circumscribed, 2: Microlobulated, 3: Obscured, 4: Ill-defined, 5: Spiculated
+  \item Nominal Categorical Variable
+  \item Predictive Attribute
+\end{itemize}
+
+\item \textbf{Density}: Mass density
+\begin{itemize}
+  \item 1: High, 2: Iso, 3: Low, 4: Fat-containing
+  \item Ordinal Categorical Variable
+  \item Predictive Attribute
+\end{itemize}
+
+\item \textbf{Severity}: Severity of the mammographic mass
+\begin{itemize}
+  \item 0: Bening, Malignant: 1
+  \item Binomial Categorical Variable
+  \item Goal Attribute
+\end{itemize}
+\end{enumerate}
+
+<<echo=TRUE, eval=TRUE>>=
+# Show Column names
+names(df)
+@
+
+\clearpage
+
+\subsubsection{Class Distribution}\label{class_distribution}
+The goal field on the dataset is the severity of the mammographic mass, which can either be benign (i.e Non-Harmful) or malicious.
+<<echo=TRUE, eval=TRUE>>=
+# Finding how many unique fields there are, and the unique values
+length(unique(df$Severity))
+unique(df$Severity)
+@
+As shown in the bar plot below, the dataset contains 961 entries, for 516 benign and 445 malignant masses.\\
+
+\begin{figure}[H]
+{\centering
+<<echo=TRUE, eval=TRUE, out.width=".5\\linewidth">>=
+
+# Class distribution
+severityFreq <- table(df$Severity)
+barplot( 
+  severityFreq,
+  col = c('steelblue4','coral1'),
+  main="Severity Frequency",
+  names.arg=c("Benign","Malicious"),
+  ylab="Number of patients"
+)
+
+
+@
+\caption {Class distribution of the severity}
+\label{fig1}
+}
+\end {figure}
+
+\clearpage
+
+\subsubsection{Dataset Summary}\label{summary}
+
+The summary displays a briefing of every column, showing statistical iformation about the data in every entry. The summary can either be numerical (Which shows information such as the maximum and minimum values, median and quartiles) or categorical, which shows the frequency of each one of the categorical values.\\
+In this dataset, only the Patient's age is numerical. The rest of the attributes only show the frequency.\\
+
+% Age
+{\large Age Summary}\\
+The patient Age attribute is a numerical attribute, so the summary shows the minimum, first quartile, median, mean, third quartile and maximum values of the data
+<<echo=TRUE, eval=FALSE>>=
+# Age    Summary
+summary(df$Age)
+@
+\begin{table}[H]
+\centering
+\begin{tabular}{ c c c c c c c }
+Min   & 1st Qu  & Median  & Mean  & 3rd Qu  & Max   & Missing \\
+\hline
+18.00 & 45.00   & 57.00   & 55.49 & 66.00   & 96.00 & 5
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+{\centering
+<<echo=TRUE, eval=TRUE, out.width=".5\\linewidth">>=
+Age <- df$Age
+hist(
+  Age,
+  xlab="Patient Age",
+  col="turquoise3",
+)
+@
+\caption {Histogram of the Patients' Age}
+\label{fig2}
+}
+\end {figure}
+
+% Shape
+{\large Shape Summary}\\
+The mass Shape attribute is a categorical attribute, so the summary shows the value frequency
+<<echo=TRUE, eval=FALSE>>=
+# Shape Summary
+summary(df$Shape)
+@
+\begin{table}[H]
+\centering
+\begin{tabular}{ c c c c c }
+Round & Oval & Lobular & Irregular & Missing \\
+\hline
+224   & 211  & 95      & 400       & 31
+\end{tabular}
+\end{table}
+
+% Margin
+{\large Margin Summary}\\
+The mass Margin attribute is a categorical attribute, so the summary shows the value frequency
+<<echo=TRUE, eval=FALSE>>=
+# Margin Summary
+summary(df$Margin)
+@
+\begin{table}[H]
+\centering
+\begin{tabular}{ c c c c c c }
+Circumscribed & Microlobulated & Obscured & Ill-defined & Spiculated & Missing \\
+\hline
+357           & 24             & 116      & 280         & 136        & 48  
+\end{tabular}
+\end{table}
+
+% Density
+{\large Density Summary}\\
+The mass Density attribute is a categorical attribute, so the summary shows the value frequency
+<<echo=TRUE, eval=FALSE>>=
+# Density Summary
+summary(df$Density)
+@
+\begin{table}[H]
+\centering
+\begin{tabular}{ c c c c c }
+High  & Iso  & Low  & Fat-Containing & Missing \\
+\hline
+16    & 59   & 798  & 12             & 76
+\end{tabular}
+\end{table}
+
+\clearpage
+
+\subsubsection{Attribute Correlation}\label{correlation}
+Correlation measures the relationship between two measurements. This dataset only contains one numerical attribute, so there's no chance to create a numerical correlation between the different values. However, a relationship can be established between the age of the patient and the severity of the mammographic mass.This relation is known, but the other attributes also contribute to it.
+
+\begin{figure}[H]
+{\centering
+<<echo=TRUE, eval=TRUE, out.width=".75\\linewidth">>=
+# Finding how attributes compare to goal
+plot(
+  data = df,
+  Age~Severity,
+  col = c('steelblue4','coral1'),
+  names.arg=c("Benign","Malicious")
+  
+)
+@
+\caption {Correlation between the Age and the severity of the Mammographic mass}
+\label{fig3}
+}
+\end {figure}
+
+\clearpage
+
+In the following page, correlations 3 Age and different Mammographic attributes can be found [~\ref{fig4}], [~\ref{fig5}], [~\ref{fig6}]. As mentioned, there is a relation between the age and the type of mass, but it's not enough to reach a conclusion.
+
+\begin{figure}[H]
+{\centering
+<<echo=TRUE, eval=TRUE, out.width=".5\\linewidth">>=
+library(datasets)
+data <- transform(df, Shape)
+boxplot(Age~Shape, data, xlab="Shape", ylab="Age")
+@
+\caption {Relation between Age and Mass Shape (Round, Oval, Lobular, Irregular)}
+\label{fig4}
+}
+\end {figure}
+
+\begin{figure}[H]
+{\centering
+<<echo=TRUE, eval=TRUE, out.width=".5\\linewidth">>=
+data <- transform(df, Margin)
+boxplot(Age~Margin, data,xlab="Margin",ylab="Age")
+@
+\caption {Relation between Age and Mass Margin (Circumscribed, Microlobulated, Obscured, Ill-defined, Spiculated)}
+\label{fig5}
+}
+\end {figure}
+
+\begin{figure}[H]
+{\centering
+<<echo=TRUE, eval=TRUE, out.width=".35\\linewidth">>=
+data <- transform(df, Density)
+boxplot(Age~Density, data,xlab="Density",ylab="Age")
+@
+\caption {Relation between Age and the Mass Density (High, Iso, Low, Fat-containing)}
+\label{fig6}
+}
+\end {figure}
+  
+\clearpage
+
+% Data Pre-processing
+\section{Data Pre-processing}\label{preprocess}
+In order to analyze the data, the attributes must first be adequated for study. This is known as pre-processing
+
+% Irrelevant Columns
+\subsection{Irrelevant Columns}\label{irrelevant_columns}
+Before going any further, it has been previously mentioned that the Assessment column is a non-predictive attribute, since it measures the effectiveness of CAD Systems. Therefore, the column is not relevant for data mining, and it should be dropped.
+
+<<echo=TRUE, eval=TRUE>>=
+# Backing up the data frame
+df_full <- df
+
+# Dropping the irrelevant column
+df$Assessment <- NULL
+
+# Showing the data frame columns without the dropped one
+names(df)
+@
+
+% Missing Values
+\subsection{Missing Values}\label{missing_values}
+One of the main issues with the dataset is the number of missing values. When taking a look at the raw data, it can be appreciated that the way missing values were handled was by writing a question mark "?" in place of the value.\\
+The data frame will need to have those missing values recognized, so when parsing the file as a data frame, missing values must be specified
+
+<<echo=TRUE, eval=TRUE>>=
+# Importing the data
+dataFrame <- read.table('data/mammographic_masses.data',
+                        header=FALSE, sep=",", na.strings="?")
+
+# Showing some rows
+df[1:5,]
+@
+\clearpage
+Now that missing values have been identified, it is necessary to know which values are missing:
+
+<<echo=TRUE, eval=TRUE>>=
+sum(is.na(df))
+sum(is.na(df$Age))
+sum(is.na(df$Shape))
+sum(is.na(df$Margin))
+sum(is.na(df$Density))
+sum(is.na(df$Severity))
+@
+
+\begin{table}[H]
+\begin{tabular}{ c c c c c c }
+Age & Shape & Margin & Density & Severity & Total \\
+\hline
+5   & 31    & 48     & 76      & 48       & 162  
+\end{tabular}
+\end{table}
+
+\subsubsection{Filling missing values}\label{filling_gaps}
+With numerical values, a way to deal with missing values is by replacing the blank attribute with the mean of such attribute.
+Since the age is the only numerical attribute, we can only use this method here.
+<<echo=TRUE, eval=TRUE>>=
+
+# Defining the function
+fillMissings <- function(x) {
+  replace(
+    x,
+    is.na(x),
+    mean(x[!is.na(x)]))
+}
+
+# Applying the function to the Age column
+df$Age <- fillMissings(df$Age)
+
+# Verifying the number of missing values on the age column
+sum(is.na(df$Age))
+
+@
+
+\subsubsection{Deleting rows}\label{deleting_rows}
+Since we cannot fill the missing values, due to the categorical nature of the attributes, we have no other option but to drop the rows that contain them.
+
+<<echo=TRUE, eval=TRUE>>=
+
+# Deleting rows with misssing factor attributes
+df <- df[!is.na(df$Shape),]
+df <- df[!is.na(df$Margin),]
+df <- df[!is.na(df$Density),]
+
+@
+
+We can now observe that there are no missing values in our data frame
+
+<<echo=TRUE, eval=TRUE>>=
+sum(is.na(df))
+@
+
+% Missing Header
+\subsection{Missing Header}\label{missing_header}
+Another issue with the dataset is the lack of headers. We may know the meaning of every column after reading about the dataset, but we still need a way to identify each one of the columns.
+
+<<echo=TRUE, eval=TRUE>>=
+# Showing the data frame header
+names(dataFrame)
+
+# Changing the column names
+names(dataFrame) <- c("Assessment","Age","Shape","Margin","Density", "Severity")
+
+# Showing the column names
+names(dataFrame)
+@
+
+\clearpage
+
+\subsection{Categorical Values}\label{categorical_values}
+As previously mentioned, most of the values are categorical, rather than numerical. This means that it can't just be measured as a number, but as propertie of the entries. After dropping unnecessary columns, the categorical attributes are the following:
+
+\begin{enumerate}
+\item \textbf{Shape}: Shape of the mammographic mass. (Nominal)
+\item \textbf{Margin}: Margin of the mammographic mass. (Nominal)
+\item \textbf{Density}: Density of the mammographic mass. (Ordinal)
+\item \textbf{Severity}: Severity of the mammographic mass. (Binominal)
+\end{enumerate}
+
+Fortunately enough, the categorical attributes already come as numerical values. If this was not the case and they were represented as, for instance, strings, such strings would need to be converted into numerical values.\\
+Now, the attributes will be converted into categorical values.
+
+<<echo=TRUE, eval=TRUE>>=
+
+# Turning the attributes into categofical
+df$Shape      <- as.factor(df$Shape)
+df$Margin     <- as.factor(df$Margin)
+df$Density    <- as.factor(df$Density)
+df$Severity   <- as.factor(df$Severity)
+
+# Checking whether the fields are factors
+is.factor(df$Age)
+is.factor(df$Shape)
+is.factor(df$Margin)
+is.factor(df$Density)
+is.factor(df$Severity)
+
+@
+
+\subsection{Data Normalization}\label{data_normalization}
+Since there are no noticeable irregularities in the dataset, such as outliers or skewed values, there is no need to normalize the dataset.
+
+\section{Modelling}\label{modelling}
+Now that the dataset has been explored and there is a better idea of what needs to be predicted, we can start building and testing models.
+
+\subsection{Creating Subsets}\label{subsets}
+Before creating predictive models, the dataset will be split into a training and a testing set, in order to avoid future problems with overfitting or underfitting.
+
+<<echo=TRUE, eval=TRUE, warning=FALSE, message=FALSE>>=
+# Downloading necessary libraries
+library(ISLR)
+library(dplyr)
+@
+
+<<echo=TRUE, eval=TRUE>>=
+
+# Getting the training dataset
+train<-sample_frac( df , 0.7)
+sid<-as.numeric(rownames(train))
+nrow(train)
+
+# Getting the test dataset
+test <- df[-sid,]
+nrow(test)
+
+if ( nrow(train) + nrow(test) == nrow(df) ){
+  print("The dataset has been split properly")
+} else {
+  print("The split of the dataset was not correct")
+}
+
+@
+
+\clearpage
+
+\subsection{Model}\label{model}
+Now that the dataset has been split, the training subset can be used to start designing the model.
+
+\subsection{Model Evaluation}\label{evaluation}
+In order to evaluate the performance of the model, the prediction column that was produced during the model needs to be tested against the actual class values that already existed on the dataset.
+
+\clearpage
+
+\section{Improving Performance}\label{improving_performance}
+
+\subsection{Filling Missing Values}\label{filling_missing}
+Earlier in this coursework, I made the mistake to assume all categorical values were supposed to be deleted, without trying to handle them. However, I realized that there are sevetral algorithms that deal with missing categorical values. So I decided to try them out.
+
+\subsection{Different Models}\label{different_models}
+
+\clearpage
+
+\section{References}\label{pubs}
+
+\printbibliography[heading =none]
+
+
+\clearpage
+
+
+\end{document}

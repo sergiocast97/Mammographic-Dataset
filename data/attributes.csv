@@ -1,0 +1,7 @@
+﻿Name,Description,Range,Type,Attribute Type
+Assessment,BI-RADS result,"1 - 5",ordinal,non-predictive
+Age,Patient's age,"18-96",integer,predictive
+Shape,Mass shape,"1 - 4",nominal,predictive
+Margin,Mass margin,"1 - 5",nominal,predictive
+Density,Mass density,"1 - 4",ordinal,predictive
+Severity,Severity of the mass,"0 / 1",binominal,goal

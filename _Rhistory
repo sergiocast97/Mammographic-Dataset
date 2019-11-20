@@ -1,0 +1,25 @@
+\documentclass{article}
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+\end{document}
+install.packages("knitr")
+install.packages("xtable")
+setwd("C:/Users/sergi/Google Drive/Uni/Y-03/CM3111 - Machine Learning and Big Data Analytics/Machine Learning/Coursework/Report")
+# Set directory to current
+setwd("C:/Users/sergi/Google Drive/Uni/Y-03/CM3111 - Big Data Analytics/Coursework/Report")
+# Set directory to current
+setwd("C:/Users/sergi/Google Drive/Uni/Y-03/CM3111 - Big Data Analytics/Coursework/Report")
+# Importing the data
+df <- read.table('data/mammographic_masses.data', header=FALSE, sep=",", na.strings="?")
+# Set directory to current
+setwd("C:/Users/sergi/Google Drive/Uni/Y-03/CM3111 - Big Data Analytics/Coursework/Report")
+# Set directory to current
+setwd("C:/Users/sergi/Google Drive/Uni/Y-03/CM3111 - Big Data Analytics/Coursework/Report")
+# Set directory to current
+setwd("C:/Users/sergi/Google Drive/Uni/Y-03/CM3111 - Big Data Analytics/Coursework/Report")
+# Set directory to current
+setwd("C:/Users/sergi/Google Drive/Uni/Y-03/CM3111 - Big Data Analytics/Coursework/Report")
+# Set directory to current
+setwd("C:/Users/sergi/Google Drive/Uni/Y-03/CM3111 - Big Data Analytics/Coursework/Report")
+# Set directory to current
+setwd("C:/Users/sergi/Google Drive/Uni/Y-03/CM3111 - Big Data Analytics/Coursework/Report")
