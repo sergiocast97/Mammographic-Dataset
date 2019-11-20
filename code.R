@@ -1,5 +1,5 @@
 # Set directory to current
-setwd("C:/Users/sergi/Google Drive/Uni/Y-03/CM3111 - Big Data Analytics/Coursework/Report")
+setwd("C:/Users/sergi/Google Drive/Uni/Y-03/CM3111 - Big Data Analytics/mammographic_dataset/Report")
 
 # Getting table of attribute information
 attr <- read.csv('data/attributes.csv')

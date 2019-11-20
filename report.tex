@@ -598,6 +598,8 @@ Age & Shape & Margin & Density & Severity & Total \\
 \end{tabular}
 \end{table}
 
+\clearpage
+
 \subsubsection{Filling missing values}\label{filling_gaps}
 With numerical values, a way to deal with missing values is by replacing the blank attribute with the mean of such attribute.
 Since the age is the only numerical attribute, we can only use this method here.
@@ -651,6 +653,8 @@ We can now observe that there are no missing values in our data frame
 \end{kframe}
 \end{knitrout}
 
+\clearpage
+
 % Missing Header
 \subsection{Missing Header}\label{missing_header}
 Another issue with the dataset is the lack of headers. We may know the meaning of every column after reading about the dataset, but we still need a way to identify each one of the columns.
@@ -677,8 +681,6 @@ Another issue with the dataset is the lack of headers. We may know the meaning o
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
-
-\clearpage
 
 \subsection{Categorical Values}\label{categorical_values}
 As previously mentioned, most of the values are categorical, rather than numerical. This means that it can't just be measured as a number, but as propertie of the entries. After dropping unnecessary columns, the categorical attributes are the following:
@@ -738,6 +740,10 @@ Now, the attributes will be converted into categorical values.
 \subsection{Data Normalization}\label{data_normalization}
 Since there are no noticeable irregularities in the dataset, such as outliers or skewed values, there is no need to normalize the dataset.
 
+\clearpage
+
+% Modelling Section
+
 \section{Modelling}\label{modelling}
 Now that the dataset has been explored and there is a better idea of what needs to be predicted, we can start building and testing models.
 
@@ -789,24 +795,60 @@ Before creating predictive models, the dataset will be split into a training and
 \clearpage
 
 \subsection{Model}\label{model}
+Now that the dataset has been split, the training subset can be used to start designing the model. For this case, Logistic Regression will be used. Logistic regression is used to model the probability that an ‘event’ will occur. In other words, the dependent variable, now p(X), assumes a value between 0 and 1. This is suitable for the current dataset, since what we are trying to predict is whether a mammographic mass can be benign of malicious (0 or 1).
 
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# Implementing the model}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
-\subsection{Test Model}\label{testing}
-\subsection{Results}\label{results}
+\subsection{Model Evaluation}\label{evaluation}
+After applying certain model to a dataset it is necessary to evaluate its performance. In order to dot that, a confusion matrix will be used, in which the prediction column that was produced during the model needs to be tested against the actual class values that already existed on the dataset. This will produce the following possible results:
+\begin{itemize}
+  \item True Positive (TP): correctly classified as the class of interest
+  \item True Negative(TN): Correctly classified as not the class of interest
+  \item False Positive(FP): Incorrectly classified as the class of interest
+  \item False Negative(FN): Incorrectly classified as not the class of interest
+\end{itemize}
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# Using a Confusion Matrix to verify the used model}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 \clearpage
 
 \section{Improving Performance}\label{improving_performance}
 
 \subsection{Filling Missing Values}\label{filling_missing}
-Earlier in this coursework, I made the mistake to assume all categorical values were supposed to be deleted, without trying to handle them. However, I realized that there are sevetral algorithms that deal with missing categorical values. So I decided to try them out.
+Having a large enough dataset is a very relevant factor when it comes to perfecting a machine learning algorithm. The bigger the training data, the better the adjustments, and the more accurate the system may become. On any given dataset, there may be missing values, and while sometimes there is no way to recreate such missing values and entire rows must be dropped, an effort must be made in order to save as much information as possible.\\
+Earlier in this coursework, it was assumed that all missing categorical values were supposed to be deleted, without trying to handle them. However, this was a mistake, and there are sevetral algorithms that deal with missing categorical values \cite{mekala_2019}. In this case, the package of choice has been missForest, an implementation of the Random forest algorithm for missing values. It does not make explicit assumptions about functional form of f (any arbitary function). Instead, it tries to estimate f such that it can be as close to the data points without seeming impractical.
 
-\subsection{Tune Parameters}\label{tuning}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# Using missForest to fill missing categorical values}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
-\subsection{Metrics}\label{metrics}
 \subsection{Different Models}\label{different_models}
-\subsection{Change Partitioning}\label{change_partitioning}
-\subsection{Cross Validation}\label{cross_validation}
+On this particular dataset, having an accurate prediction can drastically influence a patient, since a false negative means that a  mammographic mass could develop into a potentially untreated cancerous condition.\\
+The previously used logistic regression algorithm may have given decent results, but it still might be a good idea to test a different model. In this case, the chosen predictive model will be "Random Forest", which consists of a large number of individual decision trees that operate as an ensemble. Each individual tree in the random forest spits out a class prediction and the class with the most votes becomes our model’s prediction \cite{yiu_2019}.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# Using the Random Forest Algorithm}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 \clearpage
 

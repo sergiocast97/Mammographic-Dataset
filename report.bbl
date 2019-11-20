@@ -55,5 +55,57 @@
   two CAD approaches that both emphasize an intelligible decision process}
     \field{year}{2007}
   \endentry
+
+  \entry{mekala_2019}{misc}{}
+    \name{author}{1}{}{%
+      {{hash=MH}{%
+         family={Mekala},
+         familyi={M\bibinitperiod},
+         given={Harshitha},
+         giveni={H\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {Coinmonks}%
+    }
+    \strng{namehash}{MH1}
+    \strng{fullhash}{MH1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{title}{Dealing with Missing Data using R}
+    \verb{url}
+    \verb https://medium.com/coinmonks/dealing-with-missing-data-using-r-3ae428
+    \verb da2d17
+    \endverb
+    \field{journaltitle}{Medium}
+    \field{year}{2019}
+    \warn{\item Invalid format of field 'month'}
+  \endentry
+
+  \entry{yiu_2019}{misc}{}
+    \name{author}{1}{}{%
+      {{hash=YT}{%
+         family={Yiu},
+         familyi={Y\bibinitperiod},
+         given={Tony},
+         giveni={T\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {Towards Data Science}%
+    }
+    \strng{namehash}{YT1}
+    \strng{fullhash}{YT1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{title}{Understanding Random Forest}
+    \verb{url}
+    \verb https://towardsdatascience.com/understanding-random-forest-58381e0602
+    \verb d2
+    \endverb
+    \field{journaltitle}{Medium}
+    \field{year}{2019}
+    \warn{\item Invalid format of field 'month'}
+  \endentry
 \enddatalist
 \endinput
