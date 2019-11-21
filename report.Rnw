@@ -109,11 +109,11 @@ df <- read.table('data/mammographic_masses.data', header=FALSE, sep=",", na.stri
 names(df) <- c("Assessment","Age","Shape","Margin","Density", "Severity")
 
 # Converting into categorical
-df$Assessment <- as.factor(df$Assessment)
-df$Shape      <- as.factor(df$Shape)
-df$Margin     <- as.factor(df$Margin)
-df$Density    <- as.factor(df$Density)
-df$Severity   <- as.factor(df$Severity)
+df$Assessment <- factor(df$Assessment)
+df$Shape      <- factor(df$Shape)
+df$Margin     <- factor(df$Margin)
+df$Density    <- factor(df$Density, order=TRUE, levels=c("1","2","3","4"))
+df$Severity   <- factor(df$Severity)
 
 @
 
@@ -489,10 +489,10 @@ Now, the attributes will be converted into categorical values.
 <<echo=TRUE, eval=TRUE>>=
 
 # Turning the attributes into categofical
-df$Shape      <- as.factor(df$Shape)
-df$Margin     <- as.factor(df$Margin)
-df$Density    <- as.factor(df$Density)
-df$Severity   <- as.factor(df$Severity)
+df$Shape      <- factor(df$Shape)
+df$Margin     <- factor(df$Margin)
+df$Density    <- factor(df$Density, order=TRUE, levels=c("1","2","3","4"))
+df$Severity   <- factor(df$Severity)
 
 # Checking whether the fields are factors
 is.factor(df$Age)
@@ -520,6 +520,7 @@ Before creating predictive models, the dataset will be split into a training and
 # Downloading necessary libraries
 library(ISLR)
 library(dplyr)
+library(ROCR)
 @
 
 <<echo=TRUE, eval=TRUE>>=
@@ -530,10 +531,10 @@ sid<-as.numeric(rownames(train))
 nrow(train)
 
 # Getting the test dataset
-test <- df[-sid,]
-nrow(test)
+validation <- df[-sid,]
+nrow(validation)
 
-if ( nrow(train) + nrow(test) == nrow(df) ){
+if ( nrow(train) + nrow(validation) == nrow(df) ){
   print("The dataset has been split properly")
 } else {
   print("The split of the dataset was not correct")
@@ -543,43 +544,157 @@ if ( nrow(train) + nrow(test) == nrow(df) ){
 
 \clearpage
 
-\subsection{Model}\label{model}
+\subsection{Implementing a Model}\label{model}
 Now that the dataset has been split, the training subset can be used to start designing the model. For this case, Logistic Regression will be used. Logistic regression is used to model the probability that an ‘event’ will occur. In other words, the dependent variable, now p(X), assumes a value between 0 and 1. This is suitable for the current dataset, since what we are trying to predict is whether a mammographic mass can be benign of malicious (0 or 1).
 
 <<echo=TRUE, eval=TRUE>>=
 
-# Implementing the model
+# Implementing the Logistic Regression model
+
+regressionModel <- glm(
+  Severity ~ Age+Shape+Margin+Density, # Severity against parameters
+  data=train,                          # Using training data
+  family=binomial                      # Goal is a binomial value
+)
+
+# Spitting the summary of the model
+summary(regressionModel)
 
 @
 
 \subsection{Model Evaluation}\label{evaluation}
 After applying certain model to a dataset it is necessary to evaluate its performance. In order to dot that, a confusion matrix will be used, in which the prediction column that was produced during the model needs to be tested against the actual class values that already existed on the dataset. This will produce the following possible results:
 \begin{itemize}
-  \item True Positive (TP): correctly classified as the class of interest
-  \item True Negative(TN): Correctly classified as not the class of interest
-  \item False Positive(FP): Incorrectly classified as the class of interest
-  \item False Negative(FN): Incorrectly classified as not the class of interest
+  \item \textbf{True Positive (TP)}: correctly classified as the class of interest
+  \item \textbf{True Negative(TN)}: Correctly classified as not the class of interest
+  \item \textbf{False Positive(FP)}: Incorrectly classified as the class of interest
+  \item \textbf{False Negative(FN)}: Incorrectly classified as not the class of interest
 \end{itemize}
 
 <<echo=TRUE, eval=TRUE>>=
 
 # Using a Confusion Matrix to verify the used model
 
+# Creating a vector that will store the predictions
+predictedValues <- as.integer(regressionModel$fitted.values > 0.5)
+
+# Testing predictions against the severity
+error <- mean(predictedValues != train$Severity)
+
+# Outputting the overall accuracy of the model
+( training_accuracy <- (1 - error) * 100)
+
 @
+
+The model has been tested using the training subset. However, in order to perform a thorough analysis of the performance, it is advisable to predict the severity of the mammographic masses against the validation subset. In order to do that, a prediction is created by using the model and the testing dataset, with which the accuracy can be calculated.
+
+<<echo=TRUE, eval=TRUE>>=
+
+# Generating a prediction
+probabilities <- predict(
+  regressionModel,                              # Used model
+  newdata=subset(validation,select=c(1,2,3,4)), # Test dataset
+  type="response"                               # Type of prediction
+)
+
+# Store the predictions as 1 or 0
+predictions <- ifelse(probabilities>0.5, 1, 0)
+
+# Output the accuracy
+( test_accuracy <- mean(predictions==validation$Severity) )
+
+@
+
+Finally, a ROC curve can be used to measure the performance of a model:
+\begin{itemize}
+  \item The true positive rate is the sensitivity: the fraction of defaulters that are correctly identified, using a given threshold value.
+  \item The false positive rate is 1-specificity: the fraction of non-defaulters that we classify incorrectly as defaulters, using that same threshold value.
+\end{itemize}
+
+\begin{figure}[H]
+{\centering
+<<echo=TRUE, eval=TRUE, out.width=".5\\linewidth">>=
+# ROC Model
+pr <- prediction(probabilities, validation$Severity)
+prf <- performance( pr, measure = "tpr", x.measure = "fpr")
+plot(prf,frame=FALSE)
+@
+\caption {ROC curve of the regression model}
+\label{fig7}
+}
+\end {figure}
 
 \clearpage
 
 \section{Improving Performance}\label{improving_performance}
+Even though the model has achieved a fairly decent performance, it can definitely be improved. Small tweaks in the dataset, model and validation might have a positive impact on the accuracy, which would lead to a more trustworthy prediction of a potential malignant lesion, hence saving lives. I've chosen the following methods to improve my dataset's model:
+\begin{itemize}
+  \item \textbf{Filling missing values}: By dealing with missing values in a better way, the dataset size may increase, which leads to more accurate models.
+  \item \textbf{Cross Validation}: When using training and testing datasets, there must be a tradeoff between maximizing training and validation dataset size, which can lead to inaccurate models. By using different validation methods, the performance of a given model may increase.
+  \item \textbf{Different Models}: Using different modelling algorithms may vary the prediction accuracy for any given dataset, so it is a good idea to use more complex models.
+\end{itemize}
+
+<<echo=TRUE, eval=TRUE, warning=FALSE, message=FALSE>>=
+# Downloading necessary libraries
+library(caret)
+library(mice)
+@
 
 \subsection{Filling Missing Values}\label{filling_missing}
 Having a large enough dataset is a very relevant factor when it comes to perfecting a machine learning algorithm. The bigger the training data, the better the adjustments, and the more accurate the system may become. On any given dataset, there may be missing values, and while sometimes there is no way to recreate such missing values and entire rows must be dropped, an effort must be made in order to save as much information as possible.\\
-Earlier in this coursework, it was assumed that all missing categorical values were supposed to be deleted, without trying to handle them. However, this was a mistake, and there are sevetral algorithms that deal with missing categorical values \cite{mekala_2019}. In this case, the package of choice has been missForest, an implementation of the Random forest algorithm for missing values. It does not make explicit assumptions about functional form of f (any arbitary function). Instead, it tries to estimate f such that it can be as close to the data points without seeming impractical.
+Earlier in this coursework, it was assumed that all missing categorical values were supposed to be deleted, without trying to handle them. However, this was a mistake, and there are sevetral algorithms that deal with missing categorical values \cite{mekala_2019}. In this case, the package of choice has been MICE (Multivariate Imputation via Chained Equations), one of the commonly used package by R users. Creating multiple imputations as compared to a single imputation takes care of uncertainty in missing values. MICE assumes that the missing data are Missing at Random (MAR), which means that the probability that a value is missing depends only on observed value and can be predicted using them. It imputes data on a variable by variable basis by specifying an imputation model per variable.
 
 <<echo=TRUE, eval=TRUE>>=
 
-# Using missForest to fill missing categorical values
+# Getting our new dataframe ready
+new_df <- df_full
+new_df$Assessment <- NULL
+new_df$Age <- fillMissings(new_df$Age)
+
+# Using MICE to fill missing categorical values
+new_df <- mice(
+  new_df,           # Using the newDF dataframe
+  m=1,              # Generating only 1 dataframe
+  maxit=10,         # Number of Iterations
+  method='polyreg', # Method of imputation (Polyreg is used for categorical values)
+  seed=500          # Seed number
+)
+
+# Choosing the generated dataframe
+new_df <- complete(new_df,1)
+
+# Checking the number of missing values
+sum(is.na(new_df))
 
 @
+
+\subsection{Cross Validation}\label{cross_validation}
+As mentioned earlier, dividing datasets into training and a validation subsets is an easy way to train a model, but it can lead to tradeoffs during the different stages of the model creation. There are many ways to validate models, but in this case the best approach is to use Cross Validation method. The k-fold cross validation method involves splitting the dataset into k-subsets. During the training phase each subset is held out while the model is trained on all other subsets. This process is completed until accuracy is determine for each instance in the dataset, and an overall accuracy estimate is provided.
+
+<<echo=TRUE, eval=TRUE>>=
+
+# Create a data partition for Cross Validation
+inTrain <- createDataPartition(
+  y=new_df$Severity, # Have Severity as the classifying value
+  p=.7,              # Assign 70% of the data to training
+  list=FALSE)
+
+# Generating the training subset
+new_training <- new_df[inTrain,]
+nrow(new_training)
+
+# Generating the validating subset
+new_validating <- new_df [-inTrain,]
+nrow(new_validating)
+
+if ( nrow(new_training) + nrow(new_validating) == nrow(new_df) ){
+  print("The dataset has been split properly")
+} else {
+  print("The split of the dataset was not correct")
+}
+
+@
+
 
 \subsection{Different Models}\label{different_models}
 On this particular dataset, having an accurate prediction can drastically influence a patient, since a false negative means that a  mammographic mass could develop into a potentially untreated cancerous condition.\\
@@ -588,6 +703,16 @@ The previously used logistic regression algorithm may have given decent results,
 <<echo=TRUE, eval=TRUE>>=
 
 # Using the Random Forest Algorithm
+#fitModel <- train(Species~.,data=training,method="rf",prox=TRUE)
+
+@
+
+\subsection{Conclusion}\label{improvement_conclusion}
+Now that we have imrpoved different parts of our dataset and model, it is time to test its performance. Just like during the modelling stage, we will test the model against the validation subset, and verify the model accuracy.
+
+<<echo=TRUE, eval=TRUE>>=
+
+# Testing the improved model accuracy
 
 @
 

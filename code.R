@@ -56,12 +56,11 @@ barplot(
 )
 
 # Converting into categorical
-df$Assessment <- as.factor(df$Assessment)
-df$Shape      <- as.factor(df$Shape)
-df$Margin     <- as.factor(df$Margin)
-#df$Density    <- as.factor(df$Density, order=TRUE, levels =c('High', 'Iso', 'Low', 'Fat-containing'))
-df$Density    <- as.factor(df$Density)
-df$Severity   <- as.factor(df$Severity)
+df$Assessment <- factor(df$Assessment)
+df$Shape      <- factor(df$Shape)
+df$Margin     <- factor(df$Margin)
+df$Density    <- factor(df$Density, order=TRUE, levels=c("1","2","3","4"))
+df$Severity   <- factor(df$Severity)
 
 # Summary for every attribute
 
@@ -133,3 +132,68 @@ nrow(train)
 sid<-as.numeric(rownames(train))
 test <- df_clean[-sid,]
 nrow(test)
+
+# Regression Model
+regressionModel <- glm(
+  Severity ~ Age+Shape+Margin+Density,
+  data=train,
+  family=binomial
+)
+summary(regressionModel)
+
+# Using a Confusion Matrix to verify the used model
+predictedValues <- as.integer(regressionModel$fitted.values > 0.5)
+error <- mean(predictedValues != train$Severity)
+( accuracy <- (1 - error) * 100)
+
+# Prediction on test dataset
+probabilities <- predict(
+  regressionModel,
+  newdata=subset(test,select=c(1,2,3,4)),
+  type="response"
+)
+predictions <- ifelse(probabilities>0.5, 1, 0)
+test_accuracy <- mean(predictions==test$Severity)
+test_accuracy
+
+# ROC Model
+library(ROCR)
+pr <- prediction(probabilities, test$Severity)
+prf <- performance( pr, measure = "tpr", x.measure = "fpr")
+plot(prf,frame=FALSE)
+# area under the curve
+auc <- performance(pr, measure = "auc")
+auc <- auc@y.values[[1]]
+auc
+
+# Improvements
+
+library(caret)
+library(mice)
+
+new_df <- df
+new_df$Assessment <- NULL
+new_df$Age <- fillMissings(new_df$Age)
+
+# Missing values
+nrow(new_df)
+summary(new_df)
+sum(is.na(new_df))
+
+# Impute missing values using MICE
+new_df <- mice(new_df, m=1, maxit=10, method='polyreg', seed=500)
+new_df <- complete(new_df,1)
+nrow(new_df)
+summary(new_df)
+sum(is.na(new_df))
+
+# Cross Validation
+
+inTrain <- createDataPartition(y=new_df$Severity, p=.7,list=FALSE)
+new_training <- new_df[inTrain,]
+nrow(new_training)
+new_validating <- new_df [-inTrain,]
+nrow(new_validating)
+
+
+

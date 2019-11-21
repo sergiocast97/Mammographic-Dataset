@@ -699,10 +699,10 @@ Now, the attributes will be converted into categorical values.
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlcom{# Turning the attributes into categofical}
-\hlstd{df}\hlopt{$}\hlstd{Shape}      \hlkwb{<-} \hlkwd{as.factor}\hlstd{(df}\hlopt{$}\hlstd{Shape)}
-\hlstd{df}\hlopt{$}\hlstd{Margin}     \hlkwb{<-} \hlkwd{as.factor}\hlstd{(df}\hlopt{$}\hlstd{Margin)}
-\hlstd{df}\hlopt{$}\hlstd{Density}    \hlkwb{<-} \hlkwd{as.factor}\hlstd{(df}\hlopt{$}\hlstd{Density)}
-\hlstd{df}\hlopt{$}\hlstd{Severity}   \hlkwb{<-} \hlkwd{as.factor}\hlstd{(df}\hlopt{$}\hlstd{Severity)}
+\hlstd{df}\hlopt{$}\hlstd{Shape}      \hlkwb{<-} \hlkwd{factor}\hlstd{(df}\hlopt{$}\hlstd{Shape)}
+\hlstd{df}\hlopt{$}\hlstd{Margin}     \hlkwb{<-} \hlkwd{factor}\hlstd{(df}\hlopt{$}\hlstd{Margin)}
+\hlstd{df}\hlopt{$}\hlstd{Density}    \hlkwb{<-} \hlkwd{factor}\hlstd{(df}\hlopt{$}\hlstd{Density,} \hlkwc{order}\hlstd{=}\hlnum{TRUE}\hlstd{,} \hlkwc{levels}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{"1"}\hlstd{,}\hlstr{"2"}\hlstd{,}\hlstr{"3"}\hlstd{,}\hlstr{"4"}\hlstd{))}
+\hlstd{df}\hlopt{$}\hlstd{Severity}   \hlkwb{<-} \hlkwd{factor}\hlstd{(df}\hlopt{$}\hlstd{Severity)}
 
 \hlcom{# Checking whether the fields are factors}
 \hlkwd{is.factor}\hlstd{(df}\hlopt{$}\hlstd{Age)}
@@ -756,6 +756,7 @@ Before creating predictive models, the dataset will be split into a training and
 \hlcom{# Downloading necessary libraries}
 \hlkwd{library}\hlstd{(ISLR)}
 \hlkwd{library}\hlstd{(dplyr)}
+\hlkwd{library}\hlstd{(ROCR)}
 \end{alltt}
 \end{kframe}
 \end{knitrout}
@@ -773,14 +774,14 @@ Before creating predictive models, the dataset will be split into a training and
 \end{verbatim}
 \begin{alltt}
 \hlcom{# Getting the test dataset}
-\hlstd{test} \hlkwb{<-} \hlstd{df[}\hlopt{-}\hlstd{sid,]}
-\hlkwd{nrow}\hlstd{(test)}
+\hlstd{validation} \hlkwb{<-} \hlstd{df[}\hlopt{-}\hlstd{sid,]}
+\hlkwd{nrow}\hlstd{(validation)}
 \end{alltt}
 \begin{verbatim}
 ## [1] 251
 \end{verbatim}
 \begin{alltt}
-\hlkwa{if} \hlstd{(} \hlkwd{nrow}\hlstd{(train)} \hlopt{+} \hlkwd{nrow}\hlstd{(test)} \hlopt{==} \hlkwd{nrow}\hlstd{(df) )\{}
+\hlkwa{if} \hlstd{(} \hlkwd{nrow}\hlstd{(train)} \hlopt{+} \hlkwd{nrow}\hlstd{(validation)} \hlopt{==} \hlkwd{nrow}\hlstd{(df) )\{}
   \hlkwd{print}\hlstd{(}\hlstr{"The dataset has been split properly"}\hlstd{)}
 \hlstd{\}} \hlkwa{else} \hlstd{\{}
   \hlkwd{print}\hlstd{(}\hlstr{"The split of the dataset was not correct"}\hlstd{)}
@@ -794,49 +795,247 @@ Before creating predictive models, the dataset will be split into a training and
 
 \clearpage
 
-\subsection{Model}\label{model}
+\subsection{Implementing a Model}\label{model}
 Now that the dataset has been split, the training subset can be used to start designing the model. For this case, Logistic Regression will be used. Logistic regression is used to model the probability that an ‘event’ will occur. In other words, the dependent variable, now p(X), assumes a value between 0 and 1. This is suitable for the current dataset, since what we are trying to predict is whether a mammographic mass can be benign of malicious (0 or 1).
 
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlcom{# Implementing the model}
+\hlcom{# Implementing the Logistic Regression model}
+
+\hlstd{regressionModel} \hlkwb{<-} \hlkwd{glm}\hlstd{(}
+  \hlstd{Severity} \hlopt{~} \hlstd{Age}\hlopt{+}\hlstd{Shape}\hlopt{+}\hlstd{Margin}\hlopt{+}\hlstd{Density,} \hlcom{# Severity against parameters}
+  \hlkwc{data}\hlstd{=train,}                          \hlcom{# Using training data}
+  \hlkwc{family}\hlstd{=binomial}                      \hlcom{# Goal is a binomial value}
+\hlstd{)}
+
+\hlcom{# Spitting the summary of the model}
+\hlkwd{summary}\hlstd{(regressionModel)}
 \end{alltt}
+\begin{verbatim}
+## 
+## Call:
+## glm(formula = Severity ~ Age + Shape + Margin + Density, family = binomial, 
+##     data = train)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -2.4571  -0.4943  -0.2344   0.6411   2.4945  
+## 
+## Coefficients:
+##              Estimate Std. Error z value Pr(>|z|)    
+## (Intercept) -5.281250   0.707073  -7.469 8.07e-14 ***
+## Age          0.049690   0.009592   5.180 2.22e-07 ***
+## Shape2      -0.279691   0.417732  -0.670 0.503147    
+## Shape3       0.608051   0.478240   1.271 0.203574    
+## Shape4       1.483539   0.437404   3.392 0.000695 ***
+## Margin2      1.756865   0.672041   2.614 0.008943 ** 
+## Margin3      1.564464   0.443784   3.525 0.000423 ***
+## Margin4      1.734936   0.398805   4.350 1.36e-05 ***
+## Margin5      2.184017   0.486785   4.487 7.24e-06 ***
+## Density.L   -0.918484   0.919795  -0.999 0.318001    
+## Density.Q   -0.583151   0.733992  -0.794 0.426909    
+## Density.C   -0.480180   0.476485  -1.008 0.313572    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 807.52  on 584  degrees of freedom
+## Residual deviance: 486.52  on 573  degrees of freedom
+## AIC: 510.52
+## 
+## Number of Fisher Scoring iterations: 5
+\end{verbatim}
 \end{kframe}
 \end{knitrout}
 
 \subsection{Model Evaluation}\label{evaluation}
 After applying certain model to a dataset it is necessary to evaluate its performance. In order to dot that, a confusion matrix will be used, in which the prediction column that was produced during the model needs to be tested against the actual class values that already existed on the dataset. This will produce the following possible results:
 \begin{itemize}
-  \item True Positive (TP): correctly classified as the class of interest
-  \item True Negative(TN): Correctly classified as not the class of interest
-  \item False Positive(FP): Incorrectly classified as the class of interest
-  \item False Negative(FN): Incorrectly classified as not the class of interest
+  \item \textbf{True Positive (TP)}: correctly classified as the class of interest
+  \item \textbf{True Negative(TN)}: Correctly classified as not the class of interest
+  \item \textbf{False Positive(FP)}: Incorrectly classified as the class of interest
+  \item \textbf{False Negative(FN)}: Incorrectly classified as not the class of interest
 \end{itemize}
 
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlcom{# Using a Confusion Matrix to verify the used model}
+
+\hlcom{# Creating a vector that will store the predictions}
+\hlstd{predictedValues} \hlkwb{<-} \hlkwd{as.integer}\hlstd{(regressionModel}\hlopt{$}\hlstd{fitted.values} \hlopt{>} \hlnum{0.5}\hlstd{)}
+
+\hlcom{# Testing predictions against the severity}
+\hlstd{error} \hlkwb{<-} \hlkwd{mean}\hlstd{(predictedValues} \hlopt{!=} \hlstd{train}\hlopt{$}\hlstd{Severity)}
+
+\hlcom{# Outputting the overall accuracy of the model}
+\hlstd{( training_accuracy} \hlkwb{<-} \hlstd{(}\hlnum{1} \hlopt{-} \hlstd{error)} \hlopt{*} \hlnum{100}\hlstd{)}
 \end{alltt}
+\begin{verbatim}
+## [1] 81.7094
+\end{verbatim}
 \end{kframe}
 \end{knitrout}
 
-\clearpage
-
-\section{Improving Performance}\label{improving_performance}
-
-\subsection{Filling Missing Values}\label{filling_missing}
-Having a large enough dataset is a very relevant factor when it comes to perfecting a machine learning algorithm. The bigger the training data, the better the adjustments, and the more accurate the system may become. On any given dataset, there may be missing values, and while sometimes there is no way to recreate such missing values and entire rows must be dropped, an effort must be made in order to save as much information as possible.\\
-Earlier in this coursework, it was assumed that all missing categorical values were supposed to be deleted, without trying to handle them. However, this was a mistake, and there are sevetral algorithms that deal with missing categorical values \cite{mekala_2019}. In this case, the package of choice has been missForest, an implementation of the Random forest algorithm for missing values. It does not make explicit assumptions about functional form of f (any arbitary function). Instead, it tries to estimate f such that it can be as close to the data points without seeming impractical.
+The model has been tested using the training subset. However, in order to perform a thorough analysis of the performance, it is advisable to predict the severity of the mammographic masses against the validation subset. In order to do that, a prediction is created by using the model and the testing dataset, with which the accuracy can be calculated.
 
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlcom{# Using missForest to fill missing categorical values}
+\hlcom{# Generating a prediction}
+\hlstd{probabilities} \hlkwb{<-} \hlkwd{predict}\hlstd{(}
+  \hlstd{regressionModel,}                              \hlcom{# Used model}
+  \hlkwc{newdata}\hlstd{=}\hlkwd{subset}\hlstd{(validation,}\hlkwc{select}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,}\hlnum{2}\hlstd{,}\hlnum{3}\hlstd{,}\hlnum{4}\hlstd{)),} \hlcom{# Test dataset}
+  \hlkwc{type}\hlstd{=}\hlstr{"response"}                               \hlcom{# Type of prediction}
+\hlstd{)}
+
+\hlcom{# Store the predictions as 1 or 0}
+\hlstd{predictions} \hlkwb{<-} \hlkwd{ifelse}\hlstd{(probabilities}\hlopt{>}\hlnum{0.5}\hlstd{,} \hlnum{1}\hlstd{,} \hlnum{0}\hlstd{)}
+
+\hlcom{# Output the accuracy}
+\hlstd{( test_accuracy} \hlkwb{<-} \hlkwd{mean}\hlstd{(predictions}\hlopt{==}\hlstd{validation}\hlopt{$}\hlstd{Severity) )}
+\end{alltt}
+\begin{verbatim}
+## [1] 0.812749
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+Finally, a ROC curve can be used to measure the performance of a model:
+\begin{itemize}
+  \item The true positive rate is the sensitivity: the fraction of defaulters that are correctly identified, using a given threshold value.
+  \item The false positive rate is 1-specificity: the fraction of non-defaulters that we classify incorrectly as defaulters, using that same threshold value.
+\end{itemize}
+
+\begin{figure}[H]
+{\centering
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# ROC Model}
+\hlstd{pr} \hlkwb{<-} \hlkwd{prediction}\hlstd{(probabilities, validation}\hlopt{$}\hlstd{Severity)}
+\hlstd{prf} \hlkwb{<-} \hlkwd{performance}\hlstd{( pr,} \hlkwc{measure} \hlstd{=} \hlstr{"tpr"}\hlstd{,} \hlkwc{x.measure} \hlstd{=} \hlstr{"fpr"}\hlstd{)}
+\hlkwd{plot}\hlstd{(prf,}\hlkwc{frame}\hlstd{=}\hlnum{FALSE}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\includegraphics[width=.5\linewidth]{figure/unnamed-chunk-28-1} 
+
+\end{knitrout}
+\caption {ROC curve of the regression model}
+\label{fig7}
+}
+\end {figure}
+
+\clearpage
+
+\section{Improving Performance}\label{improving_performance}
+Even though the model has achieved a fairly decent performance, it can definitely be improved. Small tweaks in the dataset, model and validation might have a positive impact on the accuracy, which would lead to a more trustworthy prediction of a potential malignant lesion, hence saving lives. I've chosen the following methods to improve my dataset's model:
+\begin{itemize}
+  \item \textbf{Filling missing values}: By dealing with missing values in a better way, the dataset size may increase, which leads to more accurate models.
+  \item \textbf{Cross Validation}: When using training and testing datasets, there must be a tradeoff between maximizing training and validation dataset size, which can lead to inaccurate models. By using different validation methods, the performance of a given model may increase.
+  \item \textbf{Different Models}: Using different modelling algorithms may vary the prediction accuracy for any given dataset, so it is a good idea to use more complex models.
+\end{itemize}
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# Downloading necessary libraries}
+\hlkwd{library}\hlstd{(caret)}
+\hlkwd{library}\hlstd{(mice)}
 \end{alltt}
 \end{kframe}
 \end{knitrout}
+
+\subsection{Filling Missing Values}\label{filling_missing}
+Having a large enough dataset is a very relevant factor when it comes to perfecting a machine learning algorithm. The bigger the training data, the better the adjustments, and the more accurate the system may become. On any given dataset, there may be missing values, and while sometimes there is no way to recreate such missing values and entire rows must be dropped, an effort must be made in order to save as much information as possible.\\
+Earlier in this coursework, it was assumed that all missing categorical values were supposed to be deleted, without trying to handle them. However, this was a mistake, and there are sevetral algorithms that deal with missing categorical values \cite{mekala_2019}. In this case, the package of choice has been MICE (Multivariate Imputation via Chained Equations), one of the commonly used package by R users. Creating multiple imputations as compared to a single imputation takes care of uncertainty in missing values. MICE assumes that the missing data are Missing at Random (MAR), which means that the probability that a value is missing depends only on observed value and can be predicted using them. It imputes data on a variable by variable basis by specifying an imputation model per variable.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# Getting our new dataframe ready}
+\hlstd{new_df} \hlkwb{<-} \hlstd{df_full}
+\hlstd{new_df}\hlopt{$}\hlstd{Assessment} \hlkwb{<-} \hlkwa{NULL}
+\hlstd{new_df}\hlopt{$}\hlstd{Age} \hlkwb{<-} \hlkwd{fillMissings}\hlstd{(new_df}\hlopt{$}\hlstd{Age)}
+
+\hlcom{# Using MICE to fill missing categorical values}
+\hlstd{new_df} \hlkwb{<-} \hlkwd{mice}\hlstd{(}
+  \hlstd{new_df,}           \hlcom{# Using the newDF dataframe}
+  \hlkwc{m}\hlstd{=}\hlnum{1}\hlstd{,}              \hlcom{# Generating only 1 dataframe}
+  \hlkwc{maxit}\hlstd{=}\hlnum{10}\hlstd{,}         \hlcom{# Number of Iterations}
+  \hlkwc{method}\hlstd{=}\hlstr{'polyreg'}\hlstd{,} \hlcom{# Method of imputation (Polyreg is used for categorical values)}
+  \hlkwc{seed}\hlstd{=}\hlnum{500}          \hlcom{# Seed number}
+\hlstd{)}
+\end{alltt}
+\begin{verbatim}
+## 
+##  iter imp variable
+##   1   1  Shape  Margin  Density
+##   2   1  Shape  Margin  Density
+##   3   1  Shape  Margin  Density
+##   4   1  Shape  Margin  Density
+##   5   1  Shape  Margin  Density
+##   6   1  Shape  Margin  Density
+##   7   1  Shape  Margin  Density
+##   8   1  Shape  Margin  Density
+##   9   1  Shape  Margin  Density
+##   10   1  Shape  Margin  Density
+\end{verbatim}
+\begin{alltt}
+\hlcom{# Choosing the generated dataframe}
+\hlstd{new_df} \hlkwb{<-} \hlkwd{complete}\hlstd{(new_df,}\hlnum{1}\hlstd{)}
+
+\hlcom{# Checking the number of missing values}
+\hlkwd{sum}\hlstd{(}\hlkwd{is.na}\hlstd{(new_df))}
+\end{alltt}
+\begin{verbatim}
+## [1] 0
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\subsection{Cross Validation}\label{cross_validation}
+As mentioned earlier, dividing datasets into training and a validation subsets is an easy way to train a model, but it can lead to tradeoffs during the different stages of the model creation. There are many ways to validate models, but in this case the best approach is to use Cross Validation method. The k-fold cross validation method involves splitting the dataset into k-subsets. During the training phase each subset is held out while the model is trained on all other subsets. This process is completed until accuracy is determine for each instance in the dataset, and an overall accuracy estimate is provided.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# Create a data partition for Cross Validation}
+\hlstd{inTrain} \hlkwb{<-} \hlkwd{createDataPartition}\hlstd{(}
+  \hlkwc{y}\hlstd{=new_df}\hlopt{$}\hlstd{Severity,} \hlcom{# Have Severity as the classifying value}
+  \hlkwc{p}\hlstd{=}\hlnum{.7}\hlstd{,}              \hlcom{# Assign 70% of the data to training}
+  \hlkwc{list}\hlstd{=}\hlnum{FALSE}\hlstd{)}
+
+\hlcom{# Generating the training subset}
+\hlstd{new_training} \hlkwb{<-} \hlstd{new_df[inTrain,]}
+\hlkwd{nrow}\hlstd{(new_training)}
+\end{alltt}
+\begin{verbatim}
+## [1] 674
+\end{verbatim}
+\begin{alltt}
+\hlcom{# Generating the validating subset}
+\hlstd{new_validating} \hlkwb{<-} \hlstd{new_df [}\hlopt{-}\hlstd{inTrain,]}
+\hlkwd{nrow}\hlstd{(new_validating)}
+\end{alltt}
+\begin{verbatim}
+## [1] 287
+\end{verbatim}
+\begin{alltt}
+\hlkwa{if} \hlstd{(} \hlkwd{nrow}\hlstd{(new_training)} \hlopt{+} \hlkwd{nrow}\hlstd{(new_validating)} \hlopt{==} \hlkwd{nrow}\hlstd{(new_df) )\{}
+  \hlkwd{print}\hlstd{(}\hlstr{"The dataset has been split properly"}\hlstd{)}
+\hlstd{\}} \hlkwa{else} \hlstd{\{}
+  \hlkwd{print}\hlstd{(}\hlstr{"The split of the dataset was not correct"}\hlstd{)}
+\hlstd{\}}
+\end{alltt}
+\begin{verbatim}
+## [1] "The dataset has been split properly"
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
 
 \subsection{Different Models}\label{different_models}
 On this particular dataset, having an accurate prediction can drastically influence a patient, since a false negative means that a  mammographic mass could develop into a potentially untreated cancerous condition.\\
@@ -846,6 +1045,18 @@ The previously used logistic regression algorithm may have given decent results,
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlcom{# Using the Random Forest Algorithm}
+\hlcom{#fitModel <- train(Species~.,data=training,method="rf",prox=TRUE)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\subsection{Conclusion}\label{improvement_conclusion}
+Now that we have imrpoved different parts of our dataset and model, it is time to test its performance. Just like during the modelling stage, we will test the model against the validation subset, and verify the model accuracy.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# Testing the improved model accuracy}
 \end{alltt}
 \end{kframe}
 \end{knitrout}
