@@ -778,8 +778,10 @@ Before creating predictive models, the dataset will be split into a training and
   \hlkwd{return}\hlstd{(}\hlkwd{list}\hlstd{(}\hlstr{"train"}\hlstd{=train,} \hlstr{"validation"}\hlstd{=validation))}
 \hlstd{\}}
 
+\hlcom{# Retrieving the training and validation subsets}
 \hlstd{subset} \hlkwb{<-} \hlkwd{createSubsets}\hlstd{(df,} \hlnum{0.7}\hlstd{)}
 
+\hlcom{# Retrieving the training subset}
 \hlstd{train} \hlkwb{<-} \hlstd{subset}\hlopt{$}\hlstd{train}
 \hlkwd{nrow}\hlstd{(train)}
 \end{alltt}
@@ -787,6 +789,7 @@ Before creating predictive models, the dataset will be split into a training and
 ## [1] 585
 \end{verbatim}
 \begin{alltt}
+\hlcom{# Retrieving the test subset}
 \hlstd{validation} \hlkwb{<-} \hlstd{subset}\hlopt{$}\hlstd{validation}
 \hlkwd{nrow}\hlstd{(validation)}
 \end{alltt}
@@ -794,19 +797,27 @@ Before creating predictive models, the dataset will be split into a training and
 ## [1] 251
 \end{verbatim}
 \begin{alltt}
-\hlkwa{if} \hlstd{(} \hlkwd{nrow}\hlstd{(train)} \hlopt{+} \hlkwd{nrow}\hlstd{(validation)} \hlopt{==} \hlkwd{nrow}\hlstd{(df) )\{}
-  \hlkwd{print}\hlstd{(}\hlstr{"The dataset has been split properly"}\hlstd{)}
-\hlstd{\}} \hlkwa{else} \hlstd{\{}
-  \hlkwd{print}\hlstd{(}\hlstr{"The split of the dataset was not correct"}\hlstd{)}
+\hlcom{# Verify that the dataset was split correctly}
+\hlstd{testSize} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{dataset}\hlstd{,} \hlkwc{train}\hlstd{,} \hlkwc{test}\hlstd{) \{}
+  \hlkwd{return}\hlstd{(}
+    \hlkwd{ifelse}\hlstd{(}\hlkwd{nrow}\hlstd{(train)} \hlopt{+} \hlkwd{nrow}\hlstd{(validation)} \hlopt{==} \hlkwd{nrow}\hlstd{(dataset),}
+    \hlstr{"Properly split"}\hlstd{,}
+    \hlstr{"Not properly split"}\hlstd{)}
+  \hlstd{)}
 \hlstd{\}}
+
+\hlkwd{print}\hlstd{(} \hlkwd{testSize}\hlstd{(df, train, validation) )}
 \end{alltt}
 \begin{verbatim}
-## [1] "The dataset has been split properly"
+## [1] "Properly split"
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
 
-\clearpage
+\begin{itemize}
+\item \textbf{Training}: The training subset represents a bigger portion of the initial set, and it will be used to create the model.
+\item \textbf{Testing}: Also known as the Validation subset, it will be used to test the performance of the model with new data.
+\end{itemize}
 
 \subsection{Implementing a Model}\label{model}
 Now that the dataset has been split, the training subset can be used to start designing the model. For this case, Logistic Regression will be used. Logistic regression is used to model the probability that an ‘event’ will occur. In other words, the dependent variable, now p(X), assumes a value between 0 and 1. This is suitable for the current dataset, since what we are trying to predict is whether a mammographic mass can be benign of malicious (0 or 1).
@@ -836,35 +847,39 @@ Now that the dataset has been split, the training subset can be used to start de
 ## 
 ## Deviance Residuals: 
 ##     Min       1Q   Median       3Q      Max  
-## -2.6264  -0.5683   0.2396   0.6393   2.5580  
+## -2.5276  -0.5524  -0.2079   0.6493   2.6392  
 ## 
 ## Coefficients:
 ##              Estimate Std. Error z value Pr(>|z|)    
-## (Intercept) -4.966846   0.680924  -7.294 3.00e-13 ***
-## Age          0.059649   0.009496   6.281 3.36e-10 ***
-## Shape2      -0.173999   0.373242  -0.466 0.641086    
-## Shape3       0.517236   0.454117   1.139 0.254706    
-## Shape4       1.498870   0.390863   3.835 0.000126 ***
-## Margin2      1.614717   0.692694   2.331 0.019750 *  
-## Margin3      1.314278   0.415741   3.161 0.001571 ** 
-## Margin4      1.433762   0.355324   4.035 5.46e-05 ***
-## Margin5      1.994361   0.441820   4.514 6.36e-06 ***
-## Density.L   -0.597975   0.931918  -0.642 0.521094    
-## Density.Q    0.349678   0.720520   0.485 0.627455    
-## Density.C   -0.280886   0.427679  -0.657 0.511329    
+## (Intercept) -4.956289   0.685872  -7.226 4.96e-13 ***
+## Age          0.053218   0.009676   5.500 3.80e-08 ***
+## Shape2      -0.424488   0.399448  -1.063 0.287924    
+## Shape3       0.491117   0.440369   1.115 0.264747    
+## Shape4       1.380617   0.406291   3.398 0.000679 ***
+## Margin2      1.775312   0.681475   2.605 0.009185 ** 
+## Margin3      1.485908   0.442906   3.355 0.000794 ***
+## Margin4      1.654457   0.368175   4.494 7.00e-06 ***
+## Margin5      2.137907   0.454706   4.702 2.58e-06 ***
+## Density.L   -1.657063   0.863658  -1.919 0.055028 .  
+## Density.Q   -0.338661   0.679045  -0.499 0.617968    
+## Density.C   -0.478684   0.441448  -1.084 0.278210    
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
 ## (Dispersion parameter for binomial family taken to be 1)
 ## 
-##     Null deviance: 810.94  on 584  degrees of freedom
-## Residual deviance: 505.86  on 573  degrees of freedom
-## AIC: 529.86
+##     Null deviance: 810.69  on 584  degrees of freedom
+## Residual deviance: 501.39  on 573  degrees of freedom
+## AIC: 525.39
 ## 
 ## Number of Fisher Scoring iterations: 5
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
+
+As we have learnt during the exploration dataset, the properties of the mammographic mass and the age of the patient will be used to predict whether the mass is malicious or benign.
+
+\clearpage
 
 \subsection{Model Evaluation}\label{evaluation}
 After applying certain model to a dataset it is necessary to evaluate its performance. In order to dot that, a confusion matrix will be used, in which the prediction column that was produced during the model needs to be tested against the actual class values that already existed on the dataset. This will produce the following possible results:
@@ -880,7 +895,7 @@ In order to perform a thorough analysis of the performance, it is advisable to p
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlcom{# Get the accuracy of the model}
+\hlcom{# Test the model's performance}
 \hlstd{getModelAccuracy} \hlkwb{<-} \hlkwa{function} \hlstd{(}\hlkwc{dataset}\hlstd{,} \hlkwc{model}\hlstd{) \{}
   \hlcom{# Generating a prediction}
   \hlstd{probabilities} \hlkwb{<-} \hlkwd{predict}\hlstd{(}
@@ -901,17 +916,19 @@ In order to perform a thorough analysis of the performance, it is advisable to p
                \hlstr{"accuracy"}\hlstd{=accuracy))}
 \hlstd{\}}
 
-\hlcom{# Output the accuracy}
+\hlcom{# Get the performance parameters}
 \hlstd{accuracyList} \hlkwb{=} \hlkwd{getModelAccuracy}\hlstd{(validation,regressionModel)}
+
+\hlcom{# Output the accuracy}
 \hlstd{accuracyList}\hlopt{$}\hlstd{accuracy}
 \end{alltt}
 \begin{verbatim}
-## [1] 0.8446215
+## [1] 0.8207171
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
 
-Finally, a ROC curve can be used to measure the performance of a model:
+Finally, a ROC curve can be used to measure the performance of the model:
 \begin{itemize}
   \item The true positive rate is the sensitivity: the fraction of defaulters that are correctly identified, using a given threshold value.
   \item The false positive rate is 1-specificity: the fraction of non-defaulters that we classify incorrectly as defaulters, using that same threshold value.
@@ -939,7 +956,7 @@ Finally, a ROC curve can be used to measure the performance of a model:
 \clearpage
 
 \section{Improving Performance}\label{improving_performance}
-Even though the model has achieved a fairly decent performance, it can definitely be improved. Small tweaks in the dataset, model and validation might have a positive impact on the accuracy, which would lead to a more trustworthy prediction of a potential malignant lesion, hence saving lives. I've chosen the following methods to improve my dataset's model:
+Even though the model has achieved a fairly decent performance, it can definitely be improved. Small tweaks in the dataset, model and validation might have a positive impact on the accuracy, which would lead to a more trustworthy prediction of a potential malignant lesion, and therefore saving lives. I've chosen the following methods to improve my dataset's model:
 \begin{itemize}
   \item \textbf{Filling missing values}: By dealing with missing values in a better way, the dataset size may increase, which leads to more accurate models.
   \item \textbf{Cross Validation}: When using training and testing datasets, there must be a tradeoff between maximizing training and validation dataset size, which can lead to inaccurate models. By using different validation methods, the performance of a given model may increase.
@@ -956,6 +973,8 @@ Even though the model has achieved a fairly decent performance, it can definitel
 \end{kframe}
 \end{knitrout}
 
+\clearpage
+
 \subsection{Filling Missing Values}\label{filling_missing}
 Having a large enough dataset is a very relevant factor when it comes to perfecting a machine learning algorithm. The bigger the training data, the better the adjustments, and the more accurate the system may become. On any given dataset, there may be missing values, and while sometimes there is no way to recreate such missing values and entire rows must be dropped, an effort must be made in order to save as much information as possible.\\
 Earlier in this coursework, it was assumed that all missing categorical values were supposed to be deleted, without trying to handle them. However, this was a mistake, and there are sevetral algorithms that deal with missing categorical values \cite{mekala_2019}. In this case, the package of choice has been MICE (Multivariate Imputation via Chained Equations), one of the commonly used package by R users. Creating multiple imputations as compared to a single imputation takes care of uncertainty in missing values. MICE assumes that the missing data are Missing at Random (MAR), which means that the probability that a value is missing depends only on observed value and can be predicted using them. It imputes data on a variable by variable basis by specifying an imputation model per variable.
@@ -968,14 +987,20 @@ Earlier in this coursework, it was assumed that all missing categorical values w
 \hlstd{new_df}\hlopt{$}\hlstd{Assessment} \hlkwb{<-} \hlkwa{NULL}
 \hlstd{new_df}\hlopt{$}\hlstd{Age} \hlkwb{<-} \hlkwd{fillMissings}\hlstd{(new_df}\hlopt{$}\hlstd{Age)}
 
-\hlcom{# Using MICE to fill missing categorical values}
-\hlstd{new_df} \hlkwb{<-} \hlkwd{mice}\hlstd{(}
-  \hlstd{new_df,}           \hlcom{# Using the newDF dataframe}
-  \hlkwc{m}\hlstd{=}\hlnum{1}\hlstd{,}              \hlcom{# Generating only 1 dataframe}
-  \hlkwc{maxit}\hlstd{=}\hlnum{20}\hlstd{,}         \hlcom{# Number of Iterations}
-  \hlkwc{method}\hlstd{=}\hlstr{'polyreg'}\hlstd{,} \hlcom{# Polyreg imputation Method for categorical values}
-  \hlkwc{seed}\hlstd{=}\hlnum{666}          \hlcom{# Seed}
-\hlstd{)}
+\hlstd{fillMissing} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{dataset}\hlstd{,} \hlkwc{method}\hlstd{) \{}
+  \hlcom{# Using MICE to fill missing categorical values}
+  \hlstd{dataset} \hlkwb{<-} \hlkwd{mice}\hlstd{(}
+    \hlstd{dataset,}          \hlcom{# Using the newDF dataframe}
+    \hlkwc{m}\hlstd{=}\hlnum{1}\hlstd{,}              \hlcom{# Generating only 1 dataframe}
+    \hlkwc{maxit}\hlstd{=}\hlnum{20}\hlstd{,}         \hlcom{# Number of Iterations}
+    \hlkwc{method}\hlstd{=method}     \hlcom{# Imputation Method}
+  \hlstd{)}
+  \hlcom{# Returning the filled dataframe}
+  \hlkwd{return}\hlstd{(}\hlkwd{complete}\hlstd{(dataset,}\hlnum{1}\hlstd{))}
+\hlstd{\}}
+
+\hlcom{# Fill missing categofical values using the polyreg method}
+\hlstd{new_df} \hlkwb{<-} \hlkwd{fillMissing}\hlstd{(new_df,} \hlstr{'polyreg'}\hlstd{)}
 \end{alltt}
 \begin{verbatim}
 ## 
@@ -1002,9 +1027,6 @@ Earlier in this coursework, it was assumed that all missing categorical values w
 ##   20   1  Shape  Margin  Density
 \end{verbatim}
 \begin{alltt}
-\hlcom{# Choosing the generated dataframe}
-\hlstd{new_df} \hlkwb{<-} \hlkwd{complete}\hlstd{(new_df,}\hlnum{1}\hlstd{)}
-
 \hlcom{# Checking the number of missing values}
 \hlkwd{sum}\hlstd{(}\hlkwd{is.na}\hlstd{(new_df))}
 \end{alltt}
@@ -1013,6 +1035,8 @@ Earlier in this coursework, it was assumed that all missing categorical values w
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
+
+Now that the missing values have been dealt with, there is a larger dataset to model, which may lead to more consistent results when testing the performance of a model.
 
 \clearpage
 
@@ -1025,7 +1049,7 @@ As mentioned earlier, dividing datasets into training and a validation subsets i
 \hlcom{# Create a partition, to reserve a validation subset for later testing}
 \hlstd{inTrain} \hlkwb{<-} \hlkwd{createDataPartition}\hlstd{(}
   \hlkwc{y}\hlstd{=new_df}\hlopt{$}\hlstd{Severity,} \hlcom{# Have Severity as the classifying value}
-  \hlkwc{p}\hlstd{=}\hlnum{0.7}\hlstd{,}            \hlcom{# Assign 75% of the data to training}
+  \hlkwc{p}\hlstd{=}\hlnum{0.85}\hlstd{,}            \hlcom{# Assign 85% of the data to training}
   \hlkwc{list}\hlstd{=}\hlnum{FALSE}
 \hlstd{)}
 
@@ -1034,7 +1058,7 @@ As mentioned earlier, dividing datasets into training and a validation subsets i
 \hlkwd{nrow}\hlstd{(new_training)}
 \end{alltt}
 \begin{verbatim}
-## [1] 674
+## [1] 818
 \end{verbatim}
 \begin{alltt}
 \hlcom{# Generating the validating subset}
@@ -1042,13 +1066,20 @@ As mentioned earlier, dividing datasets into training and a validation subsets i
 \hlkwd{nrow}\hlstd{(new_validating)}
 \end{alltt}
 \begin{verbatim}
-## [1] 287
+## [1] 143
+\end{verbatim}
+\begin{alltt}
+\hlcom{# Make sure the dataset has been split correctly}
+\hlkwd{print}\hlstd{(} \hlkwd{testSize}\hlstd{(new_df, new_training, new_validating) )}
+\end{alltt}
+\begin{verbatim}
+## [1] "Not properly split"
 \end{verbatim}
 \begin{alltt}
 \hlcom{# Cross Validation}
 \hlstd{train_control}\hlkwb{<-} \hlkwd{trainControl}\hlstd{(}
-  \hlkwc{method}\hlstd{=}\hlstr{"cv"}\hlstd{,}\hlcom{# Use the Cross Validation Method}
-  \hlkwc{number}\hlstd{=}\hlnum{10}\hlstd{,}  \hlcom{# Divide into 10 subsets#}
+  \hlkwc{method}\hlstd{=}\hlstr{"cv"}\hlstd{,} \hlcom{# Use the Cross Validation Method}
+  \hlkwc{number}\hlstd{=}\hlnum{10}\hlstd{,}   \hlcom{# Divide into 7 subsets}
 \hlstd{)}
 \end{alltt}
 \end{kframe}
@@ -1068,152 +1099,34 @@ The previously used logistic regression algorithm may have given decent results,
   \hlstd{Severity}\hlopt{~}\hlstd{.,}                \hlcom{# Severity is the value to predict}
   \hlkwc{data}\hlstd{=new_training,}         \hlcom{# Use the training data}
   \hlkwc{trControl}\hlstd{=train_control,}   \hlcom{# Use Cross Validation}
-  \hlkwc{method}\hlstd{=}\hlstr{"ranger"}\hlstd{,}           \hlcom{# Use Random Forest}
+  \hlkwc{method}\hlstd{=}\hlstr{"rf"}\hlstd{,}               \hlcom{# Use Random Forest}
   \hlkwc{family}\hlstd{=}\hlkwd{binomial}\hlstd{()}          \hlcom{# The value to predict is binomial}
 \hlstd{)}
-\end{alltt}
 
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold01: mtry= 2, min.node.size=1, splitrule=gini Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold01: mtry= 6, min.node.size=1, splitrule=gini Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold01: mtry=11, min.node.size=1, splitrule=gini Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold01: mtry= 2, min.node.size=1, splitrule=extratrees Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold01: mtry= 6, min.node.size=1, splitrule=extratrees Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold01: mtry=11, min.node.size=1, splitrule=extratrees Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold02: mtry= 2, min.node.size=1, splitrule=gini Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold02: mtry= 6, min.node.size=1, splitrule=gini Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold02: mtry=11, min.node.size=1, splitrule=gini Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold02: mtry= 2, min.node.size=1, splitrule=extratrees Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold02: mtry= 6, min.node.size=1, splitrule=extratrees Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold02: mtry=11, min.node.size=1, splitrule=extratrees Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold03: mtry= 2, min.node.size=1, splitrule=gini Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold03: mtry= 6, min.node.size=1, splitrule=gini Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold03: mtry=11, min.node.size=1, splitrule=gini Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold03: mtry= 2, min.node.size=1, splitrule=extratrees Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold03: mtry= 6, min.node.size=1, splitrule=extratrees Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold03: mtry=11, min.node.size=1, splitrule=extratrees Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold04: mtry= 2, min.node.size=1, splitrule=gini Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold04: mtry= 6, min.node.size=1, splitrule=gini Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold04: mtry=11, min.node.size=1, splitrule=gini Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold04: mtry= 2, min.node.size=1, splitrule=extratrees Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold04: mtry= 6, min.node.size=1, splitrule=extratrees Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold04: mtry=11, min.node.size=1, splitrule=extratrees Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold05: mtry= 2, min.node.size=1, splitrule=gini Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold05: mtry= 6, min.node.size=1, splitrule=gini Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold05: mtry=11, min.node.size=1, splitrule=gini Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold05: mtry= 2, min.node.size=1, splitrule=extratrees Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold05: mtry= 6, min.node.size=1, splitrule=extratrees Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold05: mtry=11, min.node.size=1, splitrule=extratrees Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold06: mtry= 2, min.node.size=1, splitrule=gini Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold06: mtry= 6, min.node.size=1, splitrule=gini Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold06: mtry=11, min.node.size=1, splitrule=gini Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold06: mtry= 2, min.node.size=1, splitrule=extratrees Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold06: mtry= 6, min.node.size=1, splitrule=extratrees Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold06: mtry=11, min.node.size=1, splitrule=extratrees Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold07: mtry= 2, min.node.size=1, splitrule=gini Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold07: mtry= 6, min.node.size=1, splitrule=gini Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold07: mtry=11, min.node.size=1, splitrule=gini Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold07: mtry= 2, min.node.size=1, splitrule=extratrees Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold07: mtry= 6, min.node.size=1, splitrule=extratrees Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold07: mtry=11, min.node.size=1, splitrule=extratrees Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold08: mtry= 2, min.node.size=1, splitrule=gini Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold08: mtry= 6, min.node.size=1, splitrule=gini Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold08: mtry=11, min.node.size=1, splitrule=gini Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold08: mtry= 2, min.node.size=1, splitrule=extratrees Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold08: mtry= 6, min.node.size=1, splitrule=extratrees Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold08: mtry=11, min.node.size=1, splitrule=extratrees Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold09: mtry= 2, min.node.size=1, splitrule=gini Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold09: mtry= 6, min.node.size=1, splitrule=gini Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold09: mtry=11, min.node.size=1, splitrule=gini Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold09: mtry= 2, min.node.size=1, splitrule=extratrees Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold09: mtry= 6, min.node.size=1, splitrule=extratrees Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold09: mtry=11, min.node.size=1, splitrule=extratrees Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold10: mtry= 2, min.node.size=1, splitrule=gini Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold10: mtry= 6, min.node.size=1, splitrule=gini Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold10: mtry=11, min.node.size=1, splitrule=gini Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold10: mtry= 2, min.node.size=1, splitrule=extratrees Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold10: mtry= 6, min.node.size=1, splitrule=extratrees Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: model fit failed for Fold10: mtry=11, min.node.size=1, splitrule=extratrees Error in ranger::ranger(dependent.variable.name = "{}.outcome"{}, data = x,\ \ : \\\#\#\ \  unused argument (family = binomial())}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in nominalTrainWorkflow(x = x, y = y, wts = weights, info = trainInfo, : There were missing values in resampled performance measures.}}\begin{verbatim}
-## Something is wrong; all the Accuracy metric values are missing:
-##     Accuracy       Kappa    
-##  Min.   : NA   Min.   : NA  
-##  1st Qu.: NA   1st Qu.: NA  
-##  Median : NA   Median : NA  
-##  Mean   :NaN   Mean   :NaN  
-##  3rd Qu.: NA   3rd Qu.: NA  
-##  Max.   : NA   Max.   : NA  
-##  NA's   :6     NA's   :6
-\end{verbatim}
-
-
-{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error: Stopping}}\begin{alltt}
 \hlcom{# Print the Random Forest results}
 \hlkwd{print}\hlstd{(randomForestModel)}
 \end{alltt}
-
-
-{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in print(randomForestModel): object 'randomForestModel' not found}}\end{kframe}
+\begin{verbatim}
+## Random Forest 
+## 
+## 818 samples
+##   4 predictor
+##   2 classes: '0', '1' 
+## 
+## No pre-processing
+## Resampling: Cross-Validated (10 fold) 
+## Summary of sample sizes: 736, 736, 736, 736, 736, 736, ... 
+## Resampling results across tuning parameters:
+## 
+##   mtry  Accuracy   Kappa    
+##    2    0.7835061  0.5659470
+##    6    0.7676524  0.5358972
+##   11    0.7505793  0.4985203
+## 
+## Accuracy was used to select the optimal model using the largest value.
+## The final value used for the model was mtry = 2.
+\end{verbatim}
+\end{kframe}
 \end{knitrout}
 
 \clearpage
@@ -1229,36 +1142,28 @@ Now that we have improved different parts of our dataset and model, it is time t
   \hlstd{randomForestModel,}
   \hlstd{new_validating[,}\hlopt{-}\hlkwd{ncol}\hlstd{(new_validating)]}
 \hlstd{)}
-\end{alltt}
 
-
-{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in predict(randomForestModel, new\_validating[, -ncol(new\_validating)]): object 'randomForestModel' not found}}\begin{alltt}
 \hlcom{# Append predictions}
 \hlstd{new_validating}\hlkwb{<-} \hlkwd{cbind}\hlstd{(}
   \hlstd{new_validating,}
   \hlstd{predictions}
 \hlstd{)}
-\end{alltt}
 
-
-{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in cbind(new\_validating, predictions): object 'predictions' not found}}\begin{alltt}
 \hlcom{# Summarize results}
 \hlstd{results}\hlkwb{<-} \hlkwd{confusionMatrix}\hlstd{(}
   \hlstd{new_validating}\hlopt{$}\hlstd{predictions,}
   \hlstd{new_validating}\hlopt{$}\hlstd{Severity}
 \hlstd{)}
-\end{alltt}
 
-
-{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error: `data` and `reference` should be factors with the same levels.}}\begin{alltt}
 \hlkwd{cat}\hlstd{(}\hlstr{"Accuracy is: "}\hlstd{,} \hlkwd{sum}\hlstd{(}\hlkwd{diag}\hlstd{(results}\hlopt{$}\hlstd{table))}\hlopt{/}\hlkwd{nrow}\hlstd{(new_validating))}
 \end{alltt}
-
-
-{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in diag(results\$table): object 'results' not found}}\end{kframe}
+\begin{verbatim}
+## Accuracy is:  0.8251748
+\end{verbatim}
+\end{kframe}
 \end{knitrout}
 
-When comparing to the previous methods, a slight improvement in comparison can be appreciated.
+Interestingly enough, even though more refine methods were using to create models, there was no massive difference in the accuracy outcome, with small variations on accuracy. There is no clear evidence that Random Trees consistently outperforms Logistic Regression, having some cases in which Logistic Regression gets higher accuracy than Random Forest.
 
 \clearpage
 

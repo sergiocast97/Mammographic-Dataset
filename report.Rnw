@@ -539,23 +539,34 @@ createSubsets <- function (dataset, percentage) {
   return(list("train"=train, "validation"=validation))
 }
 
+# Retrieving the training and validation subsets
 subset <- createSubsets(df, 0.7)
 
+# Retrieving the training subset
 train <- subset$train
 nrow(train)
 
+# Retrieving the test subset
 validation <- subset$validation
 nrow(validation)
 
-if ( nrow(train) + nrow(validation) == nrow(df) ){
-  print("The dataset has been split properly")
-} else {
-  print("The split of the dataset was not correct")
+# Verify that the dataset was split correctly
+testSize <- function(dataset, train, test) {
+  return(
+    ifelse(nrow(train) + nrow(validation) == nrow(dataset), 
+    "Properly split",
+    "Not properly split")
+  )
 }
+
+print( testSize(df, train, validation) )
 
 @
 
-\clearpage
+\begin{itemize}
+\item \textbf{Training}: The training subset represents a bigger portion of the initial set, and it will be used to create the model.
+\item \textbf{Testing}: Also known as the Validation subset, it will be used to test the performance of the model with new data.
+\end{itemize}
 
 \subsection{Implementing a Model}\label{model}
 Now that the dataset has been split, the training subset can be used to start designing the model. For this case, Logistic Regression will be used. Logistic regression is used to model the probability that an ‘event’ will occur. In other words, the dependent variable, now p(X), assumes a value between 0 and 1. This is suitable for the current dataset, since what we are trying to predict is whether a mammographic mass can be benign of malicious (0 or 1).
@@ -578,6 +589,10 @@ summary(regressionModel)
 
 @
 
+As we have learnt during the exploration dataset, the properties of the mammographic mass and the age of the patient will be used to predict whether the mass is malicious or benign.
+
+\clearpage
+
 \subsection{Model Evaluation}\label{evaluation}
 After applying certain model to a dataset it is necessary to evaluate its performance. In order to dot that, a confusion matrix will be used, in which the prediction column that was produced during the model needs to be tested against the actual class values that already existed on the dataset. This will produce the following possible results:
 \begin{itemize}
@@ -591,7 +606,7 @@ In order to perform a thorough analysis of the performance, it is advisable to p
 
 <<echo=TRUE, eval=TRUE>>=
 
-# Get the accuracy of the model
+# Test the model's performance
 getModelAccuracy <- function (dataset, model) {
   # Generating a prediction
   probabilities <- predict(
@@ -612,13 +627,15 @@ getModelAccuracy <- function (dataset, model) {
                "accuracy"=accuracy))
 }
 
-# Output the accuracy
+# Get the performance parameters
 accuracyList = getModelAccuracy(validation,regressionModel)
+
+# Output the accuracy
 accuracyList$accuracy
 
 @
 
-Finally, a ROC curve can be used to measure the performance of a model:
+Finally, a ROC curve can be used to measure the performance of the model:
 \begin{itemize}
   \item The true positive rate is the sensitivity: the fraction of defaulters that are correctly identified, using a given threshold value.
   \item The false positive rate is 1-specificity: the fraction of non-defaulters that we classify incorrectly as defaulters, using that same threshold value.
@@ -640,7 +657,7 @@ plot(prf,frame=FALSE)
 \clearpage
 
 \section{Improving Performance}\label{improving_performance}
-Even though the model has achieved a fairly decent performance, it can definitely be improved. Small tweaks in the dataset, model and validation might have a positive impact on the accuracy, which would lead to a more trustworthy prediction of a potential malignant lesion, hence saving lives. I've chosen the following methods to improve my dataset's model:
+Even though the model has achieved a fairly decent performance, it can definitely be improved. Small tweaks in the dataset, model and validation might have a positive impact on the accuracy, which would lead to a more trustworthy prediction of a potential malignant lesion, and therefore saving lives. I've chosen the following methods to improve my dataset's model:
 \begin{itemize}
   \item \textbf{Filling missing values}: By dealing with missing values in a better way, the dataset size may increase, which leads to more accurate models.
   \item \textbf{Cross Validation}: When using training and testing datasets, there must be a tradeoff between maximizing training and validation dataset size, which can lead to inaccurate models. By using different validation methods, the performance of a given model may increase.
@@ -653,6 +670,8 @@ library(caret)
 library(mice)
 @
 
+\clearpage
+
 \subsection{Filling Missing Values}\label{filling_missing}
 Having a large enough dataset is a very relevant factor when it comes to perfecting a machine learning algorithm. The bigger the training data, the better the adjustments, and the more accurate the system may become. On any given dataset, there may be missing values, and while sometimes there is no way to recreate such missing values and entire rows must be dropped, an effort must be made in order to save as much information as possible.\\
 Earlier in this coursework, it was assumed that all missing categorical values were supposed to be deleted, without trying to handle them. However, this was a mistake, and there are sevetral algorithms that deal with missing categorical values \cite{mekala_2019}. In this case, the package of choice has been MICE (Multivariate Imputation via Chained Equations), one of the commonly used package by R users. Creating multiple imputations as compared to a single imputation takes care of uncertainty in missing values. MICE assumes that the missing data are Missing at Random (MAR), which means that the probability that a value is missing depends only on observed value and can be predicted using them. It imputes data on a variable by variable basis by specifying an imputation model per variable.
@@ -664,22 +683,27 @@ new_df <- df_full
 new_df$Assessment <- NULL
 new_df$Age <- fillMissings(new_df$Age)
 
-# Using MICE to fill missing categorical values
-new_df <- mice(
-  new_df,           # Using the newDF dataframe
-  m=1,              # Generating only 1 dataframe
-  maxit=20,         # Number of Iterations
-  method='polyreg', # Polyreg imputation Method for categorical values
-  seed=666          # Seed
-)
+fillMissing <- function(dataset, method) {
+  # Using MICE to fill missing categorical values
+  dataset <- mice(
+    dataset,          # Using the newDF dataframe
+    m=1,              # Generating only 1 dataframe
+    maxit=20,         # Number of Iterations
+    method=method     # Imputation Method
+  )
+  # Returning the filled dataframe
+  return(complete(dataset,1))
+}
 
-# Choosing the generated dataframe
-new_df <- complete(new_df,1)
+# Fill missing categofical values using the polyreg method
+new_df <- fillMissing(new_df, 'polyreg')
 
 # Checking the number of missing values
 sum(is.na(new_df))
 
 @
+
+Now that the missing values have been dealt with, there is a larger dataset to model, which may lead to more consistent results when testing the performance of a model.
 
 \clearpage
 
@@ -691,7 +715,7 @@ As mentioned earlier, dividing datasets into training and a validation subsets i
 # Create a partition, to reserve a validation subset for later testing
 inTrain <- createDataPartition(
   y=new_df$Severity, # Have Severity as the classifying value
-  p=0.7,            # Assign 75% of the data to training
+  p=0.85,            # Assign 85% of the data to training
   list=FALSE
 )
 
@@ -703,10 +727,13 @@ nrow(new_training)
 new_validating <- new_df [-inTrain,]
 nrow(new_validating)
 
+# Make sure the dataset has been split correctly
+print( testSize(new_df, new_training, new_validating) )
+
 # Cross Validation
 train_control<- trainControl(
-  method="cv",# Use the Cross Validation Method
-  number=10,  # Divide into 10 subsets#
+  method="cv", # Use the Cross Validation Method
+  number=10,   # Divide into 7 subsets
 )
 
 @
@@ -762,7 +789,7 @@ cat("Accuracy is: ", sum(diag(results$table))/nrow(new_validating))
 
 @
 
-When comparing to the previous methods, a slight improvement in comparison can be appreciated.
+Interestingly enough, even though more refine methods were using to create models, there was no massive difference in the accuracy outcome, with small variations on accuracy. There is no clear evidence that Random Trees consistently outperforms Logistic Regression, having some cases in which Logistic Regression gets higher accuracy than Random Forest.
 
 \clearpage
 

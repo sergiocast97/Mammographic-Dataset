@@ -213,7 +213,7 @@ randomForestModel<- train(
   Severity~.,
   data=new_training,
   trControl=train_control,
-  method="rf",
+  method="ranger",
   family=binomial()
 )
 
