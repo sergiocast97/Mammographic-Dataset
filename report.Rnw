@@ -513,9 +513,6 @@ Since there are no noticeable irregularities in the dataset, such as outliers or
 \section{Modelling}\label{modelling}
 Now that the dataset has been explored and there is a better idea of what needs to be predicted, we can start building and testing models.
 
-\subsection{Creating Subsets}\label{subsets}
-Before creating predictive models, the dataset will be split into a training and a testing set, in order to avoid future problems with overfitting or underfitting.
-
 <<echo=TRUE, eval=TRUE, warning=FALSE, message=FALSE>>=
 # Downloading necessary libraries
 library(ISLR)
@@ -523,15 +520,31 @@ library(dplyr)
 library(ROCR)
 @
 
+\subsection{Creating Subsets}\label{subsets}
+Before creating predictive models, the dataset will be split into a training and a testing set, in order to avoid future problems with overfitting or underfitting.
+
 <<echo=TRUE, eval=TRUE>>=
 
-# Getting the training dataset
-train<-sample_frac( df , 0.7)
-sid<-as.numeric(rownames(train))
+# Dividing a dataset into train and test
+createSubsets <- function (dataset, percentage) {
+  
+  # Getting the training dataset
+  train<-sample_frac( dataset , percentage)
+  sid<-as.numeric(rownames(train))
+  
+  # Getting the test dataset
+  validation <- dataset[-sid,]
+  
+  # Returning the 2 subsets
+  return(list("train"=train, "validation"=validation))
+}
+
+subset <- createSubsets(df, 0.7)
+
+train <- subset$train
 nrow(train)
 
-# Getting the test dataset
-validation <- df[-sid,]
+validation <- subset$validation
 nrow(validation)
 
 if ( nrow(train) + nrow(validation) == nrow(df) ){
@@ -551,13 +564,16 @@ Now that the dataset has been split, the training subset can be used to start de
 
 # Implementing the Logistic Regression model
 
-regressionModel <- glm(
-  Severity ~ Age+Shape+Margin+Density, # Severity against parameters
-  data=train,                          # Using training data
-  family=binomial                      # Goal is a binomial value
-)
+createRegressionModel <- function (dataset) {
+  return( glm(
+    Severity ~ Age+Shape+Margin+Density, # Severity against parameters
+    data=dataset,                        # Using training data
+    family=binomial                      # Goal is a binomial value
+  ))
+}
 
 # Spitting the summary of the model
+regressionModel <- createRegressionModel(train)
 summary(regressionModel)
 
 @
@@ -571,37 +587,34 @@ After applying certain model to a dataset it is necessary to evaluate its perfor
   \item \textbf{False Negative(FN)}: Incorrectly classified as not the class of interest
 \end{itemize}
 
-<<echo=TRUE, eval=TRUE>>=
-
-# Using a Confusion Matrix to verify the used model
-
-# Creating a vector that will store the predictions
-predictedValues <- as.integer(regressionModel$fitted.values > 0.5)
-
-# Testing predictions against the severity
-error <- mean(predictedValues != train$Severity)
-
-# Outputting the overall accuracy of the model
-( training_accuracy <- (1 - error) * 100)
-
-@
-
-The model has been tested using the training subset. However, in order to perform a thorough analysis of the performance, it is advisable to predict the severity of the mammographic masses against the validation subset. In order to do that, a prediction is created by using the model and the testing dataset, with which the accuracy can be calculated.
+In order to perform a thorough analysis of the performance, it is advisable to predict the severity of the mammographic masses against the validation subset. In order to do that, a prediction is created by using the model and the testing dataset, with which the accuracy can be calculated.
 
 <<echo=TRUE, eval=TRUE>>=
 
-# Generating a prediction
-probabilities <- predict(
-  regressionModel,                              # Used model
-  newdata=subset(validation,select=c(1,2,3,4)), # Test dataset
-  type="response"                               # Type of prediction
-)
-
-# Store the predictions as 1 or 0
-predictions <- ifelse(probabilities>0.5, 1, 0)
+# Get the accuracy of the model
+getModelAccuracy <- function (dataset, model) {
+  # Generating a prediction
+  probabilities <- predict(
+    model,                                     # Used model
+    newdata=subset(dataset,select=c(1,2,3,4)), # Test dataset
+    type="response"                            # Type of prediction
+  )
+  
+  # Store the predictions as 1 or 0
+  predictions <- ifelse(probabilities>0.5, 1, 0)
+  
+  # Store accuracy
+  accuracy = mean(predictions==validation$Severity)
+  
+  # Return Accuracy
+  return( list("probabilities"=probabilities,
+               "predictions"=predictions,
+               "accuracy"=accuracy))
+}
 
 # Output the accuracy
-( test_accuracy <- mean(predictions==validation$Severity) )
+accuracyList = getModelAccuracy(validation,regressionModel)
+accuracyList$accuracy
 
 @
 
@@ -615,7 +628,7 @@ Finally, a ROC curve can be used to measure the performance of a model:
 {\centering
 <<echo=TRUE, eval=TRUE, out.width=".5\\linewidth">>=
 # ROC Model
-pr <- prediction(probabilities, validation$Severity)
+pr <- prediction(accuracyList$probabilities, validation$Severity)
 prf <- performance( pr, measure = "tpr", x.measure = "fpr")
 plot(prf,frame=FALSE)
 @
@@ -655,9 +668,9 @@ new_df$Age <- fillMissings(new_df$Age)
 new_df <- mice(
   new_df,           # Using the newDF dataframe
   m=1,              # Generating only 1 dataframe
-  maxit=10,         # Number of Iterations
-  method='polyreg', # Method of imputation (Polyreg is used for categorical values)
-  seed=500          # Seed number
+  maxit=20,         # Number of Iterations
+  method='polyreg', # Polyreg imputation Method for categorical values
+  seed=666          # Seed
 )
 
 # Choosing the generated dataframe
@@ -668,16 +681,19 @@ sum(is.na(new_df))
 
 @
 
+\clearpage
+
 \subsection{Cross Validation}\label{cross_validation}
 As mentioned earlier, dividing datasets into training and a validation subsets is an easy way to train a model, but it can lead to tradeoffs during the different stages of the model creation. There are many ways to validate models, but in this case the best approach is to use Cross Validation method. The k-fold cross validation method involves splitting the dataset into k-subsets. During the training phase each subset is held out while the model is trained on all other subsets. This process is completed until accuracy is determine for each instance in the dataset, and an overall accuracy estimate is provided.
 
 <<echo=TRUE, eval=TRUE>>=
 
-# Create a data partition for Cross Validation
+# Create a partition, to reserve a validation subset for later testing
 inTrain <- createDataPartition(
   y=new_df$Severity, # Have Severity as the classifying value
-  p=.7,              # Assign 70% of the data to training
-  list=FALSE)
+  p=0.7,            # Assign 75% of the data to training
+  list=FALSE
+)
 
 # Generating the training subset
 new_training <- new_df[inTrain,]
@@ -687,14 +703,15 @@ nrow(new_training)
 new_validating <- new_df [-inTrain,]
 nrow(new_validating)
 
-if ( nrow(new_training) + nrow(new_validating) == nrow(new_df) ){
-  print("The dataset has been split properly")
-} else {
-  print("The split of the dataset was not correct")
-}
+# Cross Validation
+train_control<- trainControl(
+  method="cv",# Use the Cross Validation Method
+  number=10,  # Divide into 10 subsets#
+)
 
 @
 
+\clearpage
 
 \subsection{Different Models}\label{different_models}
 On this particular dataset, having an accurate prediction can drastically influence a patient, since a false negative means that a  mammographic mass could develop into a potentially untreated cancerous condition.\\
@@ -702,19 +719,50 @@ The previously used logistic regression algorithm may have given decent results,
 
 <<echo=TRUE, eval=TRUE>>=
 
-# Using the Random Forest Algorithm
-#fitModel <- train(Species~.,data=training,method="rf",prox=TRUE)
+# Random Forest
+randomForestModel<- train(
+  Severity~.,                # Severity is the value to predict
+  data=new_training,         # Use the training data
+  trControl=train_control,   # Use Cross Validation
+  method="rf",               # Use Random Forest
+  family=binomial()          # The value to predict is binomial
+)
+
+# Print the Random Forest results
+print(randomForestModel)
 
 @
 
+\clearpage
+
 \subsection{Conclusion}\label{improvement_conclusion}
-Now that we have imrpoved different parts of our dataset and model, it is time to test its performance. Just like during the modelling stage, we will test the model against the validation subset, and verify the model accuracy.
+Now that we have improved different parts of our dataset and model, it is time to test its performance. Just like during the modelling stage, we will test the model against the validation subset, and verify the model accuracy.
 
 <<echo=TRUE, eval=TRUE>>=
 
-# Testing the improved model accuracy
+# Make Predictions
+predictions<- predict(
+  randomForestModel,
+  new_validating[,-ncol(new_validating)]
+)
+
+# Append predictions
+new_validating<- cbind(
+  new_validating,
+  predictions
+)
+
+# Summarize results
+results<- confusionMatrix(
+  new_validating$predictions,
+  new_validating$Severity
+)
+
+cat("Accuracy is: ", sum(diag(results$table))/nrow(new_validating))
 
 @
+
+When comparing to the previous methods, a slight improvement in comparison can be appreciated.
 
 \clearpage
 

@@ -187,13 +187,56 @@ nrow(new_df)
 summary(new_df)
 sum(is.na(new_df))
 
-# Cross Validation
+# Create a partition, to reserve a validation subset for later testing
+inTrain <- createDataPartition(
+  y=new_df$Severity, # Have Severity as the classifying value
+  p=0.8,             # Assign 80% of the data to training
+  list=FALSE
+)
 
-inTrain <- createDataPartition(y=new_df$Severity, p=.7,list=FALSE)
+# Generating the training subset
 new_training <- new_df[inTrain,]
 nrow(new_training)
+
+# Generating the validating subset
 new_validating <- new_df [-inTrain,]
 nrow(new_validating)
 
+# Cross Validation
+train_control<- trainControl(
+  method="cv", # Use the Cross Validation Method
+  number=10    # Divide into 10 subsets
+)
+
+# Random Forest
+randomForestModel<- train(
+  Severity~.,
+  data=new_training,
+  trControl=train_control,
+  method="rf",
+  family=binomial()
+)
+
+print(randomForestModel)
+
+# Make Predictions
+predictions<- predict(
+  randomForestModel,
+  new_validating[,-ncol(new_validating)]
+)
+
+# Append predictions
+new_validating<- cbind(
+  new_validating,
+  predictions
+)
+
+# summarize results
+results<- confusionMatrix(
+  new_validating$predictions,
+  new_validating$Severity
+)
+
+cat("Accuracy is: ", sum(diag(results$table))/nrow(new_validating))
 
 
